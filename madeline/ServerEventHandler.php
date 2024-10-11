@@ -64,8 +64,6 @@ class ServerEventHandler extends SimpleEventHandler
     #[Handler]
     public function handleMessage(PrivateMessage $message): void
     {
-        dump($message->chatId);
-
         global $chatId;
 
         $filter = new FilterFromSender($chatId);
