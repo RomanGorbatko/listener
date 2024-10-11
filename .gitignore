@@ -1,3 +1,6 @@
+.idea
+.pid
+MadelineProto.log
 
 ###> symfony/framework-bundle ###
 /.env.local
@@ -8,3 +11,5 @@
 /var/
 /vendor/
 ###< symfony/framework-bundle ###
+
+/madeline/session

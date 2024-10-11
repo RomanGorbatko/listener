@@ -1,0 +1,11 @@
+; Windows/MacOS compatible config
+
+xdebug.mode=debug
+xdebug.client_host=host.docker.internal
+xdebug.client_port=9003
+xdebug.start_with_request=yes
+
+;Logs can be useful when troubleshooting connection problems. Set xdebug.log_level=7 to enable it or xdebug.log_level=0 to disable it.
+xdebug.log_level=0
+
+; On Linux use xdebug.client_host=172.17.0.1 instead of xdebug.client_host=host.docker.internal

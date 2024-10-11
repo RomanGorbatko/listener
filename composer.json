@@ -5,16 +5,38 @@
     "prefer-stable": true,
     "require": {
         "php": ">=8.2",
+        "ext-amqp": "*",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "ext-redis": "*",
+        "ccxt/ccxt": "4.4.12",
+        "danog/madelineproto": "^8",
+        "doctrine/dbal": "^3",
+        "doctrine/doctrine-bundle": "^2.13",
+        "doctrine/doctrine-migrations-bundle": "^3.3",
+        "doctrine/orm": "^3.2",
+        "friendsofphp/proxy-manager-lts": "^1.0",
+        "moneyphp/money": "4.5.0",
+        "php-amqplib/php-amqplib": "^3.7",
+        "piscibus/php-hashtag": "^1.1",
+        "snc/redis-bundle": "^4.7",
+        "symfony/amqp-messenger": "7.1.*",
         "symfony/console": "7.1.*",
         "symfony/dotenv": "7.1.*",
+        "symfony/event-dispatcher": "7.1.*",
         "symfony/flex": "^2",
         "symfony/framework-bundle": "7.1.*",
+        "symfony/messenger": "7.1.*",
+        "symfony/notifier": "7.1.*",
         "symfony/runtime": "7.1.*",
+        "symfony/scheduler": "7.1.*",
+        "symfony/telegram-notifier": "7.1.*",
+        "symfony/uid": "7.1.*",
+        "symfony/validator": "^7.1",
         "symfony/yaml": "7.1.*"
     },
     "require-dev": {
+        "symfony/maker-bundle": "^1.61"
     },
     "config": {
         "allow-plugins": {
