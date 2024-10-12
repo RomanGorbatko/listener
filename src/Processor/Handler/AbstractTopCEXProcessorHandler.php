@@ -1,22 +1,21 @@
 <?php
 
-namespace App\Processor;
+namespace App\Processor\Handler;
 
 use App\Entity\Confirmation;
 use App\Entity\Intent;
 use App\Entity\Ticker;
 use App\Enum\ExchangeEnum;
 use App\Enum\IntentStatusEnum;
-use App\Enum\ProcessorTypeEnum;
 use App\Event\TelegramLogEvent;
 use App\Message\IntentConfirmedNotification;
+use App\Processor\AbstractProcessor;
 use Piscibus\PhpHashtag\Extractor;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
-class TopCEXfbProcessorHandler extends AbstractProcessor
+abstract class AbstractTopCEXProcessorHandler extends AbstractProcessor
 {
-    private const HASHTAG = '#TopCEXfb';
     private const EXCHANGE = ExchangeEnum::BinanceFutures;
 
     public function __construct(
@@ -66,7 +65,7 @@ class TopCEXfbProcessorHandler extends AbstractProcessor
             $this->entityManager->persist($confirmationEntity);
             $this->entityManager->flush();
 
-            $message = '❕<b>Confirmation received</b>' . PHP_EOL;
+            $message = '⚠️ <b>Confirmation received</b>' . PHP_EOL;
             $message .= 'Ticker: <i>' . $confirmationEntity->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
             $message .= 'Direction: <i>' . $confirmationEntity->getIntent()->getDirection()->name . '</i>';
             $this->eventDispatcher->dispatch(new TelegramLogEvent($message));
@@ -77,18 +76,13 @@ class TopCEXfbProcessorHandler extends AbstractProcessor
         }
     }
 
-    public function getType(): ProcessorTypeEnum
-    {
-        return ProcessorTypeEnum::TopCEXfb;
-    }
-
     /**
      * @return string[]
      */
     private function extractTickers(string $message): array
     {
         $hashtags = Extractor::extract($message);
-        $hashtags = array_values(array_filter($hashtags, static fn ($item) => $item !== self::HASHTAG));
+        $hashtags = array_values(array_filter($hashtags, static fn ($item) => $item !== '#' . $this->getType()->value));
 
         return array_map(static fn ($item) => ltrim($item, '#'), $hashtags);
     }

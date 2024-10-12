@@ -59,7 +59,7 @@ readonly class TradeManager
         $this->entityManager->persist($position);
         $this->entityManager->flush();
 
-        $logMessage = '🫡<b>Position opened</b>' . PHP_EOL;
+        $logMessage = '🫡 <b>Position opened</b>' . PHP_EOL;
         $logMessage .= 'Ticker: <i>' . $position->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
         $logMessage .= 'Entry Price: <i>' . $position->getOpenPrice() . '</i>' . PHP_EOL;
         $logMessage .= 'Balance: <i>' . MoneyHelper::formater()->format($position->getAccount()->getAmount()) . '</i>';

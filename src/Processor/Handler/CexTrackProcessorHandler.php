@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Processor;
+namespace App\Processor\Handler;
 
 use App\Entity\Intent;
 use App\Entity\Ticker;
@@ -9,6 +9,7 @@ use App\Enum\ExchangeEnum;
 use App\Enum\IntentStatusEnum;
 use App\Enum\ProcessorTypeEnum;
 use App\Event\TelegramLogEvent;
+use App\Processor\AbstractProcessor;
 use App\Processor\Exception\FailedExtractElementException;
 use App\Processor\Exception\UnsupportedTickerException;
 use App\Repository\AccountRepository;
@@ -33,7 +34,7 @@ class CexTrackProcessorHandler extends AbstractProcessor
     public function processNotification(string $message, \DateTimeImmutable $datetime): void
     {
         $lines = explode(PHP_EOL, trim($message));
-        if (count($lines) !== 4) {
+        if (count($lines) <= 2) {
             throw new FailedExtractElementException('lines');
         }
 

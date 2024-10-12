@@ -5,6 +5,7 @@ namespace App\Message\Handler;
 use App\Enum\ProcessorTypeEnum;
 use App\Event\TelegramLogEvent;
 use App\Message\CryptoAttackNotification;
+use App\Processor\Exception\FailedExtractElementException;
 use App\Processor\Exception\UnsupportedTickerException;
 use App\Processor\ProcessorFactory;
 use phpseclib3\Math\BigInteger\Engines\PHP;
@@ -36,8 +37,11 @@ final readonly class CryptoAttackNotificationHandler
                     $message->getDatetime()
                 );
         }  catch (UnsupportedTickerException $exception) {
-            $logMessage = '⚡️<b>Upsupported ticker</b>' . PHP_EOL;
+            $logMessage = '⚡️<b>Unsupported ticker</b>' . PHP_EOL;
             $logMessage .= 'Ticker: <i>' . $exception->getTicker() . '</i>' . PHP_EOL;
+        }  catch (FailedExtractElementException $exception) {
+            $logMessage = '⚡️<b>Failed extract element</b>' . PHP_EOL;
+            $logMessage .= 'Type: <i>' . $exception->getType() . '</i>' . PHP_EOL;
         } catch (\Throwable $throwable) {
             $logMessage = '⚡️<b>Exception occurs NotificationHandler</b>' . PHP_EOL;
             $logMessage .= 'Class: <i>' . get_class($throwable) . '</i>' . PHP_EOL;

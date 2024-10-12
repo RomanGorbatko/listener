@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Event\TelegramLogEvent;
 use App\Message\CryptoAttackNotification;
+use App\Processor\Handler\CexTrackProcessorHandler;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -19,7 +20,8 @@ class TestCommand extends Command
 {
     public function __construct(
         private readonly MessageBusInterface $bus,
-        private readonly EventDispatcherInterface $eventDispatcher
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly CexTrackProcessorHandler $cexTrackProcessorHandler
     )
     {
         parent::__construct();
@@ -27,6 +29,13 @@ class TestCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $message = '🎰 #DOGS активность 🤔 на 20M USDT за 15 мин (10%) на Binance Futures
+P: 0,0008092 ⬆️ (4,76%)
+Объем за 24ч: 224M USDT
+Предыдущее 20 Д назад #CEXTrack';
+
+        $this->cexTrackProcessorHandler->processNotification($message, new \DateTimeImmutable());
+
         $message = '❕<b>Intent created</b>' . PHP_EOL;
         $message .= 'Ticker: <i>' . 'EOS' . '</i>' . PHP_EOL;
         $message .= 'Direction: <i>' . 'Long' . '</i>';
