@@ -82,7 +82,7 @@ abstract class AbstractTopCEXProcessorHandler extends AbstractProcessor
     private function extractTickers(string $message): array
     {
         $hashtags = Extractor::extract($message);
-        $hashtags = array_values(array_filter($hashtags, static fn ($item) => $item !== '#' . $this->getType()->value));
+        $hashtags = array_values(array_filter($hashtags, fn ($item) => $item !== '#' . $this->getType()->value));
 
         return array_map(static fn ($item) => ltrim($item, '#'), $hashtags);
     }
