@@ -66,7 +66,7 @@ abstract class AbstractTopCEXProcessorHandler extends AbstractProcessor
             $this->entityManager->flush();
 
             $message = '⚠️ <b>Confirmation received</b>' . PHP_EOL;
-            $message .= 'Ticker: <i>' . $confirmationEntity->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
+            $message .= 'Ticker: <i>#' . $confirmationEntity->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
             $message .= 'Direction: <i>' . $confirmationEntity->getIntent()->getDirection()->name . '</i>';
             $this->eventDispatcher->dispatch(new TelegramLogEvent($message));
 

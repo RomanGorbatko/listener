@@ -59,12 +59,6 @@ readonly class TradeManager
         $this->entityManager->persist($position);
         $this->entityManager->flush();
 
-        $logMessage = '🫡 <b>Position opened</b>' . PHP_EOL;
-        $logMessage .= 'Ticker: <i>' . $position->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
-        $logMessage .= 'Entry Price: <i>' . $position->getOpenPrice() . '</i>' . PHP_EOL;
-        $logMessage .= 'Balance: <i>' . MoneyHelper::formater()->format($position->getAccount()->getAmount()) . '</i>';
-        $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
-
         return $position;
     }
 
@@ -113,7 +107,7 @@ readonly class TradeManager
             );
 
             if (null === $this->tradeMap->getTrade($symbol)) {
-                $tradingSimulator = new TradingSimulator($position, $this->eventDispatcher);
+                $tradingSimulator = new TradingSimulator($position, $this->eventDispatcher, $this->entityManager);
                 $tradingSimulator->openPosition();
 
                 $this->commitPosition($tradingSimulator->getPosition(), $symbol);

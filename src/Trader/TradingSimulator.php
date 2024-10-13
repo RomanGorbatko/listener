@@ -7,6 +7,7 @@ use App\Enum\DirectionEnum;
 use App\Enum\PositionStatusEnum;
 use App\Event\TelegramLogEvent;
 use App\Helper\MoneyHelper;
+use Doctrine\ORM\EntityManagerInterface;
 use Money\Currencies\CryptoCurrencies;
 use Money\Formatter\DecimalMoneyFormatter;
 use Money\MoneyFormatter;
@@ -38,7 +39,8 @@ class TradingSimulator
 
     public function __construct(
         private readonly Position $position,
-        private readonly EventDispatcherInterface $eventDispatcher
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly EntityManagerInterface $entityManager,
     ) {
         $this->balance = (float) MoneyHelper::formater()->format($position->getAccount()->getAmount());
     }
@@ -69,6 +71,14 @@ class TradingSimulator
 
         $this->balance -= ($this->position->getAmount() + $commission);
         $this->updateAccountBalance();
+
+        $logMessage = '🫡 <b>Position opened</b>' . PHP_EOL;
+        $logMessage .= 'Ticker: <i>#' . $this->position->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
+        $logMessage .= 'Entry: <i>' . $this->position->getOpenPrice() . '</i>' . PHP_EOL;
+        $logMessage .= 'Take Profit: <i>' . $this->position->getTakeProfitPrice() . '</i>' . PHP_EOL;
+        $logMessage .= 'Stop Loss: <i>' . $this->position->getStopLossPrice() . '</i>' . PHP_EOL;
+        $logMessage .= 'Balance: <i>' . MoneyHelper::formater()->format($this->position->getAccount()->getAmount()) . '</i>';
+        $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
     }
 
     public function closePosition(float $exitPrice, $partialAmount = null): void
@@ -97,10 +107,11 @@ class TradingSimulator
             $logMessage = '🫡 <b>Position closed</b>' . PHP_EOL;
 
             $this->position->setAmount(0);
+            $this->position->setPnl($profit);
             $this->position->setStatus(PositionStatusEnum::Closed);
         }
 
-        $logMessage .= 'Ticker: <i>' . $this->position->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
+        $logMessage .= 'Ticker: <i>#' . $this->position->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
         $logMessage .= 'Profit: <i>' . $profit . '</i>' . PHP_EOL;
         $logMessage .= 'Balance: <i>' . MoneyHelper::formater()->format($this->position->getAccount()->getAmount()) . '</i>';
         $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
@@ -127,8 +138,8 @@ class TradingSimulator
                 $this->position->setStopLossPrice($newStopLoss);
 
                 $logMessage = '🫡 <b>Stop loss trailed</b>' . PHP_EOL;
-                $logMessage .= 'Ticker: <i>' . $this->position->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
-                $logMessage .= 'Stop loss price: <i>' . $this->position->getStopLossPrice() . '</i>';
+                $logMessage .= 'Ticker: <i>#' . $this->position->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
+                $logMessage .= 'Stop loss: <i>' . $this->position->getStopLossPrice() . '</i>';
                 $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
             }
 
@@ -149,8 +160,8 @@ class TradingSimulator
                 $this->position->setTakeProfitPrice($newTakeProfit);
 
                 $logMessage = '🫡 <b>Take profit trailed</b>' . PHP_EOL;
-                $logMessage .= 'Ticker: <i>' . $this->position->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
-                $logMessage .= 'Take profit pice: <i>' . $this->position->getTakeProfitPrice() . '</i>';
+                $logMessage .= 'Ticker: <i>#' . $this->position->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
+                $logMessage .= 'Take profit: <i>' . $this->position->getTakeProfitPrice() . '</i>';
                 $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
             }
         }
@@ -166,8 +177,8 @@ class TradingSimulator
                 $this->position->setStopLossPrice($newStopLoss);
 
                 $logMessage = '🫡 <b>Stop loss trailed</b>' . PHP_EOL;
-                $logMessage .= 'Ticker: <i>' . $this->position->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
-                $logMessage .= 'Stop loss price: <i>' . $this->position->getStopLossPrice() . '</i>';
+                $logMessage .= 'Ticker: <i>#' . $this->position->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
+                $logMessage .= 'Stop loss: <i>' . $this->position->getStopLossPrice() . '</i>';
                 $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
             }
 
@@ -177,14 +188,15 @@ class TradingSimulator
                     $this->closePosition($currentPrice, $partialAmount);
 
                     $this->position->setAmount($this->position->getAmount() * 0.25);
+                    $this->closedPartial = true;
                 }
 
                 $newTakeProfit = $currentTakeProfit * (1 - self::TRAILING_STEP);
                 $this->position->setTakeProfitPrice($newTakeProfit);
 
                 $logMessage = '🫡 <b>Take profit trailed</b>' . PHP_EOL;
-                $logMessage .= 'Ticker: <i>' . $this->position->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
-                $logMessage .= 'Take profit pice: <i>' . $this->position->getTakeProfitPrice() . '</i>';
+                $logMessage .= 'Ticker: <i>#' . $this->position->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
+                $logMessage .= 'Take profit: <i>' . $this->position->getTakeProfitPrice() . '</i>';
                 $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
             }
         }
@@ -225,6 +237,8 @@ class TradingSimulator
 
     private function updateAccountBalance(): void
     {
+        $this->entityManager->refresh($this->position->getAccount());
+
         $this->position->getAccount()->setAmount(
             MoneyHelper::parser()->parse(
                 (string) $this->balance,

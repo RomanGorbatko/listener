@@ -67,7 +67,7 @@ class CexTrackProcessorHandler extends AbstractProcessor
             $intentEntity->setVolume($volume);
 
             $message = '❕<b>Intent Updated</b>' . PHP_EOL;
-            $message .= 'Ticker: <i>' . $intentEntity->getTicker()->getName() . '</i>' . PHP_EOL;
+            $message .= 'Ticker: <i>#' . $intentEntity->getTicker()->getName() . '</i>' . PHP_EOL;
             $message .= 'Direction: <i>' . $intentEntity->getDirection()->name . '</i>';
             $this->eventDispatcher->dispatch(new TelegramLogEvent($message));
         } else {
@@ -82,7 +82,7 @@ class CexTrackProcessorHandler extends AbstractProcessor
             $intentEntity->setOriginalMessage($message);
 
             $message = '❕<b>Intent created</b>' . PHP_EOL;
-            $message .= 'Ticker: <i>' . $intentEntity->getTicker()->getName() . '</i>' . PHP_EOL;
+            $message .= 'Ticker: <i>#' . $intentEntity->getTicker()->getName() . '</i>' . PHP_EOL;
             $message .= 'Direction: <i>' . $intentEntity->getDirection()->name . '</i>';
             $this->eventDispatcher->dispatch(new TelegramLogEvent($message));
         }

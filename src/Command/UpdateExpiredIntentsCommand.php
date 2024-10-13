@@ -44,7 +44,7 @@ class UpdateExpiredIntentsCommand extends Command
                 $this->entityManager->persist($intent);
 
                 $logMessage = '❕️<b>Intent expired</b>' . PHP_EOL;
-                $logMessage .= 'Ticker: <i>' . $intent->getTicker()->getName() . '</i>';
+                $logMessage .= 'Ticker: <i>#' . $intent->getTicker()->getName() . '</i>';
                 $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
             }
         }

@@ -38,7 +38,7 @@ final readonly class CryptoAttackNotificationHandler
                 );
         }  catch (UnsupportedTickerException $exception) {
             $logMessage = '⚡️<b>Unsupported ticker</b>' . PHP_EOL;
-            $logMessage .= 'Ticker: <i>' . $exception->getTicker() . '</i>' . PHP_EOL;
+            $logMessage .= 'Ticker: <i>#' . $exception->getTicker() . '</i>' . PHP_EOL;
         }  catch (FailedExtractElementException $exception) {
             $logMessage = '⚡️<b>Failed extract element</b>' . PHP_EOL;
             $logMessage .= 'Type: <i>' . $exception->getType() . '</i>' . PHP_EOL;
