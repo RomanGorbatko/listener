@@ -9,4 +9,8 @@ enum ProcessorTypeEnum: string
     case CEXTrack = 'CEXTrack';
     case TopCEXfb = 'TopCEXfb';
     case TopCEXfbp = 'TopCEXfbp';
+    case TopCEXas = 'TopCEXas';
+    case TopCEXsbp = 'TopCEXsbp';
+    case TopCEXsb = 'TopCEXsb';
+    case TopCEXad = 'TopCEXad';
 }
