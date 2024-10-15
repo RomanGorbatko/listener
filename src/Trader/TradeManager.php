@@ -64,36 +64,30 @@ readonly class TradeManager
 
     public function listenOpenPositions(): PromiseInterface
     {
-//        dump((new BinanceClassic)->fetch_tickers());exit;
-
-        return async(function () {
-            $binance = new BinanceAsync([]);
+        return async(function ($binance) {
             $symbols = [];
+            if (date('s') % 2) {
+                $symbols = $this->refreshSymbols();
+            }
 
-            while (true) {
-                if (date('i') % 2) {
-                    $symbols = $this->refreshSymbols();
-                }
+            if (! $symbols) {
+                return;
+            }
 
-                if (! $symbols) {
+            $tickers = await($binance->watch_tickers($symbols));
+            foreach ($tickers as $ticker) {
+                /** @var TradingSimulator $tradingSimulator */
+                $tradingSimulator = $this->tradeMap->getTrade($ticker['symbol']);
+                if (! $tradingSimulator instanceof TradingSimulator) {
                     continue;
                 }
 
-                $tickers = await($binance->watch_tickers($symbols));
-                foreach ($tickers as $ticker) {
-                    /** @var TradingSimulator $tradingSimulator */
-                    $tradingSimulator = $this->tradeMap->getTrade($ticker['symbol']);
-                    if (! $tradingSimulator instanceof TradingSimulator) {
-                        continue;
-                    }
+                $tradingSimulator->updateTrailing($ticker['last']);
+                $tradingSimulator->checkPosition($ticker['last']);
 
-                    $tradingSimulator->updateTrailing($ticker['last']);
-                    $tradingSimulator->checkPosition($ticker['last']);
-
-                    $this->commitPosition($tradingSimulator->getPosition(), $ticker['symbol']);
-                }
+                $this->commitPosition($tradingSimulator->getPosition(), $ticker['symbol']);
             }
-        }) ();
+        }) (new BinanceAsync([]));
     }
 
     private function refreshSymbols(): array

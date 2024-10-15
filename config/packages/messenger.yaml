@@ -4,7 +4,12 @@ framework:
         # failure_transport: failed
 
         transports:
-            async: "%env(MESSENGER_TRANSPORT_DSN)%"
+            async:
+                dsn: "%env(MESSENGER_TRANSPORT_DSN)%"
+                options:
+                    heartbeat: 45
+                    write_timeout: 90
+                    read_timeout: 90
 
         routing:
             # async is whatever name you gave your transport above
