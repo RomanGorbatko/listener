@@ -28,6 +28,8 @@ jobs:
           ${{ runner.os }}-php-
     - name: PHPUnit tests
       uses: php-actions/phpunit@v3
+      with:
+        php_extensions: "gmp xdebug"
     - name: Install Dependencies
       run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
     - name: Deploy to DigitalOcean
