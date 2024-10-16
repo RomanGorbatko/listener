@@ -27,7 +27,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-php-
     - name: PHPUnit tests
-      uses: php-actions/phpunit@v3
+      uses: php-actions/phpunit@v4
       with:
         php_extensions: "gmp xdebug bcmath"
     - name: Install Dependencies
