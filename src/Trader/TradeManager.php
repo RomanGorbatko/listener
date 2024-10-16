@@ -69,10 +69,11 @@ readonly class TradeManager
         return async(function () {
             $binance = new BinanceAsync([]);
             $symbols = [];
-
+            
             while (true) {
                 if (date('s') % 5) {
                     $symbols = $this->refreshSymbols();
+                    sleep(1);
                 }
 
                 usleep(10);
