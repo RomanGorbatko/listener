@@ -71,9 +71,11 @@ readonly class TradeManager
             $symbols = [];
 
             while (true) {
-                if (date('s') % 10) {
+                if (date('s') % 5) {
                     $symbols = $this->refreshSymbols();
                 }
+
+                usleep(10);
 
                 if (! $symbols) {
                     continue;
