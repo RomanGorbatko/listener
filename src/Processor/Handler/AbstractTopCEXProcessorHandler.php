@@ -48,13 +48,13 @@ abstract class AbstractTopCEXProcessorHandler extends AbstractProcessor
             $tickerEntityIds[] = $tickerEntity->getId();
         }
 
+        $this->entityManager->flush();
+
         /** @var Intent[] $intents */
         $intents = $this->intentRepository->findBy([
             'ticker' => $tickerEntityIds,
             'status' => IntentStatusEnum::WaitingForConfirmation,
         ]);
-
-        $this->entityManager->flush();
 
         foreach ($intents as $intent) {
             $confirmationEntity = new Confirmation();
@@ -65,10 +65,10 @@ abstract class AbstractTopCEXProcessorHandler extends AbstractProcessor
             $this->entityManager->persist($confirmationEntity);
             $this->entityManager->flush();
 
-            $message = '⚠️ <b>Confirmation received</b>' . PHP_EOL;
-            $message .= 'Ticker: <i>#' . $confirmationEntity->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
-            $message .= 'Direction: <i>' . $confirmationEntity->getIntent()->getDirection()->name . '</i>';
-            $this->eventDispatcher->dispatch(new TelegramLogEvent($message));
+            $logMessage = '⚠️ <b>Confirmation received</b>' . PHP_EOL;
+            $logMessage .= 'Ticker: <i>#' . $confirmationEntity->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
+            $logMessage .= 'Direction: <i>' . $confirmationEntity->getIntent()->getDirection()->name . '</i>';
+            $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
 
             $this->bus->dispatch(
                 new IntentConfirmedNotification($confirmationEntity->getId())
