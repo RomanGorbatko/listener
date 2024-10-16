@@ -19,18 +19,16 @@ use React\Promise\PromiseInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function React\Async\{async, await};
 
-class TradeManager
+readonly class TradeManager
 {
     private const int DEFAULT_LEVERAGE = 20;
     private const float DEFAULT_RISK_PERCENTAGE = 0.1;
 
-    private array $symbolsCache = [];
-
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
-        private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly PositionRepository $positionRepository,
-        private readonly TradeMap $tradeMap
+        private EntityManagerInterface $entityManager,
+        private EventDispatcherInterface $eventDispatcher,
+        private PositionRepository $positionRepository,
+        private TradeMap $tradeMap
     ) {
     }
 
@@ -66,16 +64,17 @@ class TradeManager
 
     public function listenOpenPositions(): PromiseInterface
     {
-        return async(function (BinanceAsync $binance) {
+        return async(function ($binance) {
+            $symbols = [];
             if (date('s') % 2) {
-                $this->symbolsCache = $this->refreshSymbols();
+                $symbols = $this->refreshSymbols();
             }
 
-            if (empty($this->symbolsCache)) {
+            if (! $symbols) {
                 return;
             }
 
-            $tickers = await($binance->watch_tickers($this->symbolsCache));
+            $tickers = await($binance->watch_tickers($symbols));
             foreach ($tickers as $ticker) {
                 /** @var TradingSimulator $tradingSimulator */
                 $tradingSimulator = $this->tradeMap->getTrade($ticker['symbol']);
@@ -94,12 +93,7 @@ class TradeManager
     private function refreshSymbols(): array
     {
         $symbols = [];
-        $positions = $this->positionRepository->findBy([
-            'status' => [
-                PositionStatusEnum::Ready,
-                PositionStatusEnum::Open,
-            ]
-        ]);
+        $positions = $this->getPositionsForListen();
 
         foreach ($positions as $position) {
             $symbol = TickerHelper::tickerToSymbol(
@@ -146,6 +140,17 @@ class TradeManager
 
             $this->entityManager->rollback();
         }
+    }
+
+    /**
+     * @return Position[]
+     */
+    private function getPositionsForListen(): array
+    {
+        return $this->positionRepository->findBy(['status' => [
+            PositionStatusEnum::Ready,
+            PositionStatusEnum::Open,
+        ]]);
     }
 
     private function openPositionOnExchange(Ticker $ticker): float

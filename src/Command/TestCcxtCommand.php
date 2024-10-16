@@ -31,9 +31,9 @@ class TestCcxtCommand extends Command
     {
         $loop = Loop::get();
         if ($loop instanceof LoopInterface) {
-            $callback = async(fn() => await($this->tradeManager->listenOpenPositions()));
+            $callback = fn() => await($this->tradeManager->listenOpenPositions());
 
-            $loop->addPeriodicTimer(0.1, $callback);
+            $loop->addPeriodicTimer(0, $callback);
             $loop->run();
         }
 
