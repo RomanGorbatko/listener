@@ -4,8 +4,6 @@ namespace App\Command;
 
 use App\Trader\TradeManager;
 use ccxt\pro\binance;
-use React\EventLoop\Loop;
-use React\EventLoop\LoopInterface;
 use React\Promise\PromiseInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -29,13 +27,7 @@ class TestCcxtCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $loop = Loop::get();
-        if ($loop instanceof LoopInterface) {
-            $callback = fn() => await($this->tradeManager->listenOpenPositions());
-
-            $loop->addPeriodicTimer(0, $callback);
-            $loop->run();
-        }
+        await($this->tradeManager->listenOpenPositions());
 
         return Command::SUCCESS;
     }
