@@ -3,6 +3,7 @@
 namespace App\Command\Account;
 
 use App\Enum\ExchangeEnum;
+use App\Helper\MoneyHelper;
 use App\Helper\TickerHelper;
 use App\Repository\AccountRepository;
 use ccxt\binance;
@@ -55,7 +56,7 @@ class AccountLoadMarketsCommand extends Command
 
         $markets = $exchange->load_markets();
         foreach ($markets as $symbol => $market) {
-            if (! ($market['quote'] === 'USDT' && $market['type'] === 'swap')) {
+            if (! ($market['quote'] === MoneyHelper::BASE_CURRENCY && $market['type'] === 'swap')) {
                 continue;
             }
 

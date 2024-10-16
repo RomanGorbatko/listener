@@ -3,8 +3,11 @@
 namespace App\Command;
 
 use App\Event\TelegramLogEvent;
+use App\Helper\MoneyHelper;
 use App\Message\CryptoAttackNotification;
 use App\Processor\Handler\CexTrackProcessorHandler;
+use Money\Currency;
+use Money\Money;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -29,6 +32,33 @@ class TestCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $risk = 0.1;
+        $commissionRate = 0.001;
+        $leverage = 20;
+        $initialBalance = 1000;
+        $entryPrice = 1000;
+        $stopPrice = 980;
+        $takeProfitPrice =
+        $currency = new Currency(MoneyHelper::BASE_CURRENCY);
+
+        $account = MoneyHelper::parser()->parse($initialBalance, $currency);
+        $positionSize = $account->multiply((string) $risk);
+        $effectiveAmount = $positionSize->multiply($leverage);
+        $commissionPaid = $effectiveAmount->multiply((string) $commissionRate);
+
+        $account = $account->subtract(
+            $positionSize->add($commissionPaid)
+        );
+
+        dump([
+            'positionSize' => MoneyHelper::formater()->format($positionSize),
+            'effectiveAmount' => MoneyHelper::formater()->format($effectiveAmount),
+            'commissionPaid' => MoneyHelper::formater()->format($commissionPaid),
+            'accountAfterOpenedPosition' => MoneyHelper::formater()->format($account),
+        ]);
+
+        exit;
+
         $message = '🎰 #DOGS активность 🤔 на 20M USDT за 15 мин (10%) на Binance Futures
 P: 0,0008092 ⬆️ (4,76%)
 Объем за 24ч: 224M USDT

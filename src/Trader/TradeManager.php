@@ -51,7 +51,7 @@ readonly class TradeManager
         $position->setStatus(PositionStatusEnum::Ready);
         $position->setRisk(self::DEFAULT_RISK_PERCENTAGE);
         $position->setLeverage(self::DEFAULT_LEVERAGE);
-        $position->setOpenPrice($openPrice);
+        $position->setEntryPrice($openPrice);
 
         $intent->setStatus(IntentStatusEnum::OnPosition);
         $this->entityManager->persist($intent);
@@ -69,7 +69,7 @@ readonly class TradeManager
         return async(function () {
             $binance = new BinanceAsync([]);
             $symbols = [];
-            
+
             while (true) {
                 if (date('s') % 5) {
                     $symbols = $this->refreshSymbols();

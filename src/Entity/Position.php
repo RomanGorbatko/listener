@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Enum\PositionStatusEnum;
+use App\Helper\MoneyHelper;
 use App\Model\Timestampable\TimestampableInterface;
 use App\Model\Timestampable\TimestampableTrait;
 use App\Model\Uuid\UuidInterface;
@@ -10,6 +11,8 @@ use App\Model\Uuid\UuidTrait;
 use App\Repository\PositionRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Money\Currency;
+use Money\Money;
 
 #[ORM\Entity(repositoryClass: PositionRepository::class)]
 class Position implements UuidInterface, TimestampableInterface
@@ -29,7 +32,7 @@ class Position implements UuidInterface, TimestampableInterface
     private PositionStatusEnum $status;
 
     #[ORM\Column(type: 'float', nullable: false)]
-    private float $openPrice;
+    private float $entryPrice;
 
     #[ORM\Column(type: 'float', nullable: true)]
     private float|null $stopLossPrice = null;
@@ -37,17 +40,20 @@ class Position implements UuidInterface, TimestampableInterface
     #[ORM\Column(type: 'float', nullable: true)]
     private float|null $takeProfitPrice = null;
 
-    #[ORM\Column(type: 'float', nullable: true)]
-    private float|null $pnl = null;
-
     #[ORM\Column(type: 'float', nullable: false)]
     private float $risk;
 
     #[ORM\Column(type: 'integer', nullable: false)]
     private int $leverage;
 
-    #[ORM\Column(type: 'float', nullable: true)]
-    private float|null $amount = null;
+    #[ORM\Column(type: 'string', nullable: false)]
+    private string|null $amount = null;
+
+    #[ORM\Column(type: 'string', nullable: true)]
+    private string|null $pnl = null;
+
+    #[ORM\Column(type: 'string', nullable: true)]
+    private string|null $commission = null;
 
     public function __construct()
     {
@@ -74,14 +80,14 @@ class Position implements UuidInterface, TimestampableInterface
         $this->account = $account;
     }
 
-    public function getOpenPrice(): float
+    public function getEntryPrice(): float
     {
-        return $this->openPrice;
+        return $this->entryPrice;
     }
 
-    public function setOpenPrice(float $openPrice): void
+    public function setEntryPrice(float $entryPrice): void
     {
-        $this->openPrice = $openPrice;
+        $this->entryPrice = $entryPrice;
     }
 
     public function getStopLossPrice(): ?float
@@ -102,16 +108,6 @@ class Position implements UuidInterface, TimestampableInterface
     public function setTakeProfitPrice(?float $takeProfitPrice): void
     {
         $this->takeProfitPrice = $takeProfitPrice;
-    }
-
-    public function getPnl(): ?float
-    {
-        return $this->pnl;
-    }
-
-    public function setPnl(?float $pnl): void
-    {
-        $this->pnl = $pnl;
     }
 
     public function getStatus(): PositionStatusEnum
@@ -144,13 +140,45 @@ class Position implements UuidInterface, TimestampableInterface
         $this->leverage = $leverage;
     }
 
-    public function getAmount(): ?float
+    public function getAmount(): ?Money
     {
-        return $this->amount;
+        if ($this->amount === null) {
+            return null;
+        }
+
+        return new Money($this->amount, new Currency(MoneyHelper::BASE_CURRENCY));
     }
 
-    public function setAmount(?float $amount): void
+    public function setAmount(Money $money): void
     {
-        $this->amount = $amount;
+        $this->amount = $money->getAmount();
+    }
+
+    public function getPnl(): ?Money
+    {
+        if ($this->pnl === null) {
+            return null;
+        }
+
+        return new Money($this->pnl, new Currency(MoneyHelper::BASE_CURRENCY));
+    }
+
+    public function setPnl(Money $pnl): void
+    {
+        $this->pnl = $pnl->getAmount();
+    }
+
+    public function getCommission(): ?Money
+    {
+        if ($this->commission === null) {
+            return null;
+        }
+
+        return new Money($this->commission, new Currency(MoneyHelper::BASE_CURRENCY));
+    }
+
+    public function setCommission(Money $commission): void
+    {
+        $this->commission = $commission->getAmount();
     }
 }

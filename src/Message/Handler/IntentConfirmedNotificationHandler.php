@@ -34,7 +34,6 @@ final readonly class IntentConfirmedNotificationHandler
             $this->entityManager->persist($confirmationEntity);
             $this->entityManager->flush();
 
-
             $this->tradeManager->openPosition($confirmationEntity->getIntent(), $this->getAccount());
         }
     }
