@@ -32,6 +32,10 @@ class TestCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        throw new \RuntimeException('Example exception.');
+        $this->eventDispatcher->dispatch(new TelegramLogEvent('test text'));
+        exit;
+
 //        $risk = 0.1;
 //        $commissionRate = 0.001;
 //        $leverage = 20;

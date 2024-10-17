@@ -19,6 +19,7 @@
         "moneyphp/money": "4.5.0",
         "php-amqplib/php-amqplib": "^3.7",
         "piscibus/php-hashtag": "^1.1",
+        "sentry/sentry-symfony": "^5.0",
         "snc/redis-bundle": "^4.7",
         "symfony/amqp-messenger": "7.1.*",
         "symfony/console": "7.1.*",
