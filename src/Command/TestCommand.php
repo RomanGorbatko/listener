@@ -32,45 +32,32 @@ class TestCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $risk = 0.1;
-        $commissionRate = 0.001;
-        $leverage = 20;
-        $initialBalance = 1000;
-        $entryPrice = 1000;
-        $stopPrice = 980;
-        $takeProfitPrice =
-        $currency = new Currency(MoneyHelper::BASE_CURRENCY);
+//        $risk = 0.1;
+//        $commissionRate = 0.001;
+//        $leverage = 20;
+//        $initialBalance = 1000;
+//        $entryPrice = 1000;
+//        $stopPrice = 980;
+//        $takeProfitPrice =
+//        $currency = new Currency(MoneyHelper::BASE_CURRENCY);
+//
+//        $account = MoneyHelper::parser()->parse($initialBalance, $currency);
+//        $positionSize = $account->multiply((string) $risk);
+//        $effectiveAmount = $positionSize->multiply($leverage);
+//        $commissionPaid = $effectiveAmount->multiply((string) $commissionRate);
+//
+//        $account = $account->subtract(
+//            $positionSize->add($commissionPaid)
+//        );
+//
+//        dump([
+//            'positionSize' => MoneyHelper::formater()->format($positionSize),
+//            'effectiveAmount' => MoneyHelper::formater()->format($effectiveAmount),
+//            'commissionPaid' => MoneyHelper::formater()->format($commissionPaid),
+//            'accountAfterOpenedPosition' => MoneyHelper::formater()->format($account),
+//        ]);
 
-        $account = MoneyHelper::parser()->parse($initialBalance, $currency);
-        $positionSize = $account->multiply((string) $risk);
-        $effectiveAmount = $positionSize->multiply($leverage);
-        $commissionPaid = $effectiveAmount->multiply((string) $commissionRate);
-
-        $account = $account->subtract(
-            $positionSize->add($commissionPaid)
-        );
-
-        dump([
-            'positionSize' => MoneyHelper::formater()->format($positionSize),
-            'effectiveAmount' => MoneyHelper::formater()->format($effectiveAmount),
-            'commissionPaid' => MoneyHelper::formater()->format($commissionPaid),
-            'accountAfterOpenedPosition' => MoneyHelper::formater()->format($account),
-        ]);
-
-        exit;
-
-        $message = '🎰 #DOGS активность 🤔 на 20M USDT за 15 мин (10%) на Binance Futures
-P: 0,0008092 ⬆️ (4,76%)
-Объем за 24ч: 224M USDT
-Предыдущее 20 Д назад #CEXTrack';
-
-        $this->cexTrackProcessorHandler->processNotification($message, new \DateTimeImmutable());
-
-        $message = '❕<b>Intent created</b>' . PHP_EOL;
-        $message .= 'Ticker: <i>' . 'EOS' . '</i>' . PHP_EOL;
-        $message .= 'Direction: <i>' . 'Long' . '</i>';
-        $this->eventDispatcher->dispatch(new TelegramLogEvent(str_repeat('a', 5000)));
-        exit;
+//        exit;
 
         $this->bus->dispatch(new CryptoAttackNotification('
 🎰 #ALT покупают 🧨 на 2 BTC за 3 мин (16%) на Binance

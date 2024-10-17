@@ -3,6 +3,7 @@
 namespace App\Event\Listener;
 
 use App\Event\TelegramLogEvent;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\Notifier\Bridge\Telegram\Reply\Markup\InlineKeyboardMarkup;
 use Symfony\Component\Notifier\Bridge\Telegram\TelegramOptions;
@@ -13,7 +14,8 @@ use Symfony\Component\Notifier\Message\ChatMessage;
 readonly class TelegramLogEventListener
 {
     public function __construct(
-        private ChatterInterface $chatter
+        private ChatterInterface $chatter,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -25,6 +27,13 @@ readonly class TelegramLogEventListener
         $chatMessage = new ChatMessage($event->getMessage());
         $chatMessage->options($telegramOptions);
 
-        $this->chatter->send($chatMessage);
+        try {
+            $this->chatter->send($chatMessage);
+        } catch (\Throwable $exception) {
+            $this->logger->error(self::class, [
+                'message' => $exception->getMessage(),
+                'event' => $event->getMessage(),
+            ]);
+        }
     }
 }
