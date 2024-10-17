@@ -41,5 +41,6 @@ jobs:
         script: |
           cd /root/listener
           git pull
+          composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
           php bin/console doctrine:migrations:migrate
           supervisorctl restart all
