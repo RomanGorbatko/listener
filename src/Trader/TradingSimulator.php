@@ -89,16 +89,9 @@ class TradingSimulator
             $multiplier = $this->position->getEntryPrice() - $exitPrice;
         }
 
-        configureScope(function (Scope $scope) use($exitPrice, $multiplier): void {
-            try {
-                $scope->setContext('closePosition', [
-                    'positionId' => $this->position->getId(),
-                    'exitPrice' => $exitPrice,
-                    'entryPrice' => $this->position->getEntryPrice(),
-                    'multiplier' => $multiplier,
-                ]);
-            } catch (\Throwable $exception) {}
-        });
+        if (str_contains((string) $multiplier, 'E')) {
+            $multiplier = sprintf('%.6f', $multiplier);
+        }
 
         $profit = $amountToClose?->multiply($this->position->getLeverage())
             ->multiply((string) $multiplier)
