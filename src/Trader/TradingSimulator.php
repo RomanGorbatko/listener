@@ -95,8 +95,8 @@ class TradingSimulator
         }
 
         $profit = $amountToClose?->multiply($this->position->getLeverage())
-            ->multiply($multiplier)
-            ->divide($this->position->getEntryPrice());
+            ->multiply((string) $multiplier)
+            ->divide((string) $this->position->getEntryPrice());
 
         $commission = $amountToClose?->multiply($this->position->getLeverage())
             ->multiply((string) self::COMMISSION_RATE);
