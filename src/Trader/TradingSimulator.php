@@ -22,9 +22,9 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 class TradingSimulator
 {
     private const float STOP_LOSS_FACTOR_LONG = 0.98; // 2% для long
-    private const float TAKE_PROFIT_FACTOR_LONG = 1.03; // 2% для long
+    private const float TAKE_PROFIT_FACTOR_LONG = 1.02; // 2% для long
     private const float STOP_LOSS_FACTOR_SHORT = 1.02; // 2% для short
-    private const float TAKE_PROFIT_FACTOR_SHORT = 0.97; // 2% для short
+    private const float TAKE_PROFIT_FACTOR_SHORT = 0.98; // 2% для short
 
 //    private const float STOP_LOSS_FACTOR_LONG = 0.99; // 1% для long
 //    private const float TAKE_PROFIT_FACTOR_LONG = 1.01; // 1% для long
@@ -168,12 +168,13 @@ class TradingSimulator
         $entryPrice = $this->position->getEntryPrice();
         $currentStopLoss = $this->position->getStopLossPrice();
         $currentTakeProfit = $this->position->getTakeProfitPrice();
+        $stopLossMultiplier = $this->closedPartial ? 0.01 : 0.02;
 
         if ($this->position->getIntent()->getDirection() === DirectionEnum::Long) {
             // Розрахунок приросту ціни у відсотках від точки входу
             $priceIncreasePercent = ($currentPrice - $entryPrice) / $entryPrice;
             // Розрахунок нового стоп-лоссу на основі приросту ціни
-            $newStopLossPercent = floor($priceIncreasePercent * 100) / 100 - 0.02; // Віднімаємо 2%, щоб підняти стоп кожні 1%
+            $newStopLossPercent = floor($priceIncreasePercent * 100) / 100 - $stopLossMultiplier; // Віднімаємо 2%, щоб підняти стоп кожні 1%
             $newStopLoss = $entryPrice * (1 + $newStopLossPercent);
 
             // Оновлюємо стоп-лосс, якщо він вищий за поточний
@@ -216,7 +217,7 @@ class TradingSimulator
         if ($this->position->getIntent()->getDirection() === DirectionEnum::Short) {
             $priceDecreasePercent = ($entryPrice - $currentPrice) / $entryPrice;
 
-            $newStopLossPercent = floor($priceDecreasePercent * 100) / 100 - 0.02;
+            $newStopLossPercent = floor($priceDecreasePercent * 100) / 100 - $stopLossMultiplier;
             $newStopLoss = $entryPrice * (1 - $newStopLossPercent);
 
             if ($newStopLoss < $currentStopLoss) {
