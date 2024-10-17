@@ -42,5 +42,7 @@ jobs:
           cd /root/listener
           git pull
           composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+          php bin/console cache:clear --no-interaction
+          php bin/console cache:pool:clear cache.global_clearer
           php bin/console doctrine:migrations:migrate
           supervisorctl restart all
