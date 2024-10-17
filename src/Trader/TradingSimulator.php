@@ -123,13 +123,23 @@ class TradingSimulator
         );
 
         if ($partialAmount === null) {
+            $logMessage = '🫡 <b>Position closed</b>' . PHP_EOL;
+
             $this->position->setAmount(MoneyHelper::createZeroMoney());
             $this->position->setStatus(PositionStatusEnum::Closed);
         } else {
+            $logMessage = '🫡 <b>Position closed partially</b>' . PHP_EOL;
+
             $this->position->setAmount(
                 $this->position->getAmount()?->subtract($partialAmount)
             );
         }
+
+        $logMessage .= 'Ticker: <i>#' . $this->position->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
+        $logMessage .= 'Direction: <i>' . $this->position->getIntent()->getDirection()->name . '</i>' . PHP_EOL;
+        $logMessage .= 'Profit: <i>' . MoneyHelper::formater()->format($profit) . '</i>' . PHP_EOL;
+        $logMessage .= 'Balance: <i>' . MoneyHelper::formater()->format($this->position->getAccount()->getAmount()) . '</i>';
+        $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
 
 //        $this->balance += ($amountToClose + $profit - $commission);
 //        $this->updateAccountBalance();
@@ -147,10 +157,6 @@ class TradingSimulator
 //            $this->position->setStatus(PositionStatusEnum::Closed);
 //        }
 //
-//        $logMessage .= 'Ticker: <i>#' . $this->position->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
-//        $logMessage .= 'Profit: <i>' . $profit . '</i>' . PHP_EOL;
-//        $logMessage .= 'Balance: <i>' . MoneyHelper::formater()->format($this->position->getAccount()->getAmount()) . '</i>';
-//        $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
     }
 
     public function updateTrailing(float $currentPrice): void
