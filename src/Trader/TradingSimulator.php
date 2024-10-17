@@ -15,8 +15,10 @@ use Money\Money;
 use Money\MoneyFormatter;
 use Money\MoneyParser;
 use Money\Parser\DecimalMoneyParser;
+use Sentry\State\Scope;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function Sentry\configureScope;
 
 #[Autoconfigure(shared: false)]
 class TradingSimulator
@@ -86,6 +88,15 @@ class TradingSimulator
         } elseif ($this->position->getIntent()->getDirection() === DirectionEnum::Short) {
             $multiplier = $this->position->getEntryPrice() - $exitPrice;
         }
+
+        configureScope(function (Scope $scope) use($exitPrice, $multiplier): void {
+            $scope->setContext('closePosition', [
+                'positionId' => $this->position->getId(),
+                'exitPrice' => $exitPrice,
+                'entryPrice' => $this->position->getEntryPrice(),
+                'multiplier' => $multiplier,
+            ]);
+        });
 
         $profit = $amountToClose?->multiply($this->position->getLeverage())
             ->multiply((string) $multiplier)
