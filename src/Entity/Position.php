@@ -55,6 +55,9 @@ class Position implements UuidInterface, TimestampableInterface
     #[ORM\Column(type: 'string', nullable: true)]
     private string|null $commission = null;
 
+    #[ORM\Column(type: 'boolean', nullable: false, options: ['default' => false])]
+    private bool $closedPartially = false;
+
     public function __construct()
     {
         $this->createdAt = new DateTimeImmutable();
@@ -180,5 +183,15 @@ class Position implements UuidInterface, TimestampableInterface
     public function setCommission(Money $commission): void
     {
         $this->commission = $commission->getAmount();
+    }
+
+    public function isClosedPartially(): bool
+    {
+        return $this->closedPartially;
+    }
+
+    public function setClosedPartially(bool $closedPartially): void
+    {
+        $this->closedPartially = $closedPartially;
     }
 }

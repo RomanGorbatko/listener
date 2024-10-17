@@ -34,8 +34,6 @@ class TradingSimulator
     private const float TRAILING_STEP = 0.0025; // 0.2%
     private const float COMMISSION_RATE = 0.001;
 
-    private bool $closedPartial = false;
-
     public function __construct(
         private readonly Position $position,
         private readonly EventDispatcherInterface $eventDispatcher,
@@ -46,11 +44,6 @@ class TradingSimulator
     public function getPosition(): Position
     {
         return $this->position;
-    }
-
-    public function isClosedPartial(): bool
-    {
-        return $this->closedPartial;
     }
 
     public function openPosition(): void
@@ -168,7 +161,7 @@ class TradingSimulator
         $entryPrice = $this->position->getEntryPrice();
         $currentStopLoss = $this->position->getStopLossPrice();
         $currentTakeProfit = $this->position->getTakeProfitPrice();
-        $stopLossMultiplier = $this->closedPartial ? 0.01 : 0.02;
+        $stopLossMultiplier = $this->position->isClosedPartially() ? 0.01 : 0.02;
 
         if ($this->position->getIntent()->getDirection() === DirectionEnum::Long) {
             // Розрахунок приросту ціни у відсотках від точки входу
@@ -189,14 +182,14 @@ class TradingSimulator
 
             // Якщо ціна досягла поточного take-profit
             if ($currentPrice >= $currentTakeProfit) {
-                if ($this->closedPartial === false) {
+                if ($this->position->isClosedPartially() === false) {
                     // Закриваємо 70% позиції
                     $partialAmount = $this->position->getAmount()?->multiply((string) 0.70);
                     $this->closePosition($currentPrice, $partialAmount);
 
 //                    // Оновлюємо суму позиції на 30% від початкової
 //                    $this->position->setAmount($this->position->getAmount()?->multiply((string) 0.30));
-                    $this->closedPartial = true;
+                    $this->position->setClosedPartially(true);
                 }
 
                 // Оновлюємо take-profit, збільшуючи його на 0.25%
@@ -230,12 +223,12 @@ class TradingSimulator
             }
 
             if ($currentPrice <= $currentTakeProfit) {
-                if ($this->closedPartial === false) {
+                if ($this->position->isClosedPartially() === false) {
                     $partialAmount = $this->position->getAmount()?->multiply((string) 0.70);
                     $this->closePosition($currentPrice, $partialAmount);
 
 //                    $this->position->setAmount($this->position->getAmount()?->multiply((string) 0.30));
-                    $this->closedPartial = true;
+                    $this->position->setClosedPartially(true);
                 }
 
                 $newTakeProfit = $currentTakeProfit * (1 - self::TRAILING_STEP);

@@ -46,7 +46,7 @@ class TradingSimulatorTest extends TestCase
         $this->assertEquals('100.00000000', $this->formatMoney($position->getAmount()));
         $this->assertEquals('2.00000000', $this->formatMoney($position->getCommission()));
         $this->assertEquals(980, $position->getStopLossPrice());
-        $this->assertEquals(1030, $position->getTakeProfitPrice());
+        $this->assertEquals(1020, $position->getTakeProfitPrice());
         $this->assertEquals('898.00000000', $this->formatMoney($position->getAccount()->getAmount()));
     }
 
@@ -77,10 +77,10 @@ class TradingSimulatorTest extends TestCase
         $tradingSimulator->checkPosition($price);
 
         $this->assertEquals('990.00', $this->formatFloat($position->getStopLossPrice()));
-        $this->assertEquals('1030.00', $this->formatFloat($position->getTakeProfitPrice()));
+        $this->assertEquals('1020.00', $this->formatFloat($position->getTakeProfitPrice()));
         $this->assertEquals('100.00000000', $this->formatMoney($position->getAmount()));
         $this->assertEquals(PositionStatusEnum::Open, $position->getStatus());
-        $this->assertFalse($tradingSimulator->isClosedPartial());
+        $this->assertFalse($position->isClosedPartially());
     }
 
     public function testTrailingStopLossGoingToBE(): void
@@ -93,13 +93,13 @@ class TradingSimulatorTest extends TestCase
         $tradingSimulator->checkPosition($price);
 
         $this->assertEquals(PositionStatusEnum::Open, $position->getStatus());
-        $this->assertFalse($tradingSimulator->isClosedPartial());
+        $this->assertTrue($position->isClosedPartially());
         $this->assertEquals('1000.00', $this->formatFloat($position->getStopLossPrice()));
         $this->assertSame($this->formatFloat($position->getEntryPrice()), $this->formatFloat($position->getStopLossPrice()));
-        $this->assertEquals('1030.00', $this->formatFloat($position->getTakeProfitPrice()));
-        $this->assertEquals('100.00000000', $this->formatMoney($position->getAmount()));
-        $this->assertEquals('2.00000000', $this->formatMoney($position->getCommission()));
-        $this->assertNull($position->getPnl());
+        $this->assertEquals('1022.55', $this->formatFloat($position->getTakeProfitPrice()));
+        $this->assertEquals('30.00000000', $this->formatMoney($position->getAmount()));
+        $this->assertEquals('3.40000000', $this->formatMoney($position->getCommission()));
+        $this->assertEquals('28.00000000', $this->formatMoney($position->getPnl()));
     }
 
     public function testClosePartiallyPositionTakeProfit(): void
@@ -112,7 +112,7 @@ class TradingSimulatorTest extends TestCase
         $tradingSimulator->checkPosition($price);
 
         $this->assertEquals(PositionStatusEnum::Open, $position->getStatus());
-        $this->assertTrue($tradingSimulator->isClosedPartial());
+        $this->assertTrue($position->isClosedPartially());
         $this->assertEquals('1010.00', $this->formatFloat($position->getStopLossPrice()));
         $this->assertEquals('1032.58', $this->formatFloat($position->getTakeProfitPrice()));
         $this->assertEquals('30.00000000', $this->formatMoney($position->getAmount()));
@@ -130,7 +130,7 @@ class TradingSimulatorTest extends TestCase
         $tradingSimulator->checkPosition($price);
 
         $this->assertEquals(PositionStatusEnum::Open, $position->getStatus());
-        $this->assertTrue($tradingSimulator->isClosedPartial());
+        $this->assertTrue($position->isClosedPartially());
         $this->assertEquals('1010.00', $this->formatFloat($position->getStopLossPrice()));
         $this->assertEquals('1032.58', $this->formatFloat($position->getTakeProfitPrice()));
         $this->assertEquals('30.00000000', $this->formatMoney($position->getAmount()));
@@ -142,8 +142,8 @@ class TradingSimulatorTest extends TestCase
         $tradingSimulator->checkPosition($price);
 
         $this->assertEquals(PositionStatusEnum::Open, $position->getStatus());
-        $this->assertTrue($tradingSimulator->isClosedPartial());
-        $this->assertEquals('1030.00', $this->formatFloat($position->getStopLossPrice()));
+        $this->assertTrue($position->isClosedPartially());
+        $this->assertEquals('1040.00', $this->formatFloat($position->getStopLossPrice()));
         $this->assertEquals('1052.63', $this->formatFloat($position->getTakeProfitPrice()));
         $this->assertEquals('30.00000000', $this->formatMoney($position->getAmount()));
         $this->assertEquals('42.00000000', $this->formatMoney($position->getPnl()));
@@ -154,8 +154,8 @@ class TradingSimulatorTest extends TestCase
         $tradingSimulator->checkPosition($price);
 
         $this->assertEquals(PositionStatusEnum::Open, $position->getStatus());
-        $this->assertTrue($tradingSimulator->isClosedPartial());
-        $this->assertEquals('1040.00', $this->formatFloat($position->getStopLossPrice()));
+        $this->assertTrue($position->isClosedPartially());
+        $this->assertEquals('1050.00', $this->formatFloat($position->getStopLossPrice()));
         $this->assertEquals('1067.66', $this->formatFloat($position->getTakeProfitPrice()));
         $this->assertEquals('30.00000000', $this->formatMoney($position->getAmount()));
         $this->assertEquals('42.00000000', $this->formatMoney($position->getPnl()));
@@ -166,8 +166,8 @@ class TradingSimulatorTest extends TestCase
         $tradingSimulator->checkPosition($price);
 
         $this->assertEquals(PositionStatusEnum::Closed, $position->getStatus());
-        $this->assertTrue($tradingSimulator->isClosedPartial());
-        $this->assertEquals('1040.00', $this->formatFloat($position->getStopLossPrice()));
+        $this->assertTrue($position->isClosedPartially());
+        $this->assertEquals('1050.00', $this->formatFloat($position->getStopLossPrice()));
         $this->assertEquals('1067.66', $this->formatFloat($position->getTakeProfitPrice()));
         $this->assertEquals('0.00000000', $this->formatMoney($position->getAmount()));
         $this->assertEquals('66.00000000', $this->formatMoney($position->getPnl()));
@@ -183,7 +183,7 @@ class TradingSimulatorTest extends TestCase
         $tradingSimulator = new TradingSimulator($position, $this->eventDispatcher, $this->entityManager);
         $tradingSimulator->openPosition();
 
-        $this->assertFalse($tradingSimulator->isClosedPartial());
+        $this->assertFalse($position->isClosedPartially());
 
         return $tradingSimulator;
     }
