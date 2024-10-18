@@ -7,12 +7,9 @@ use App\Helper\MoneyHelper;
 use App\Helper\TickerHelper;
 use App\Repository\AccountRepository;
 use ccxt\binance;
-use Redis;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -22,8 +19,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class AccountLoadMarketsCommand extends Command
 {
     public function __construct(
-        private readonly Redis $redisDefault,
-        private readonly AccountRepository $accountRepository
+        private readonly \Redis $redisDefault,
+        private readonly AccountRepository $accountRepository,
     ) {
         parent::__construct();
     }
@@ -51,12 +48,12 @@ class AccountLoadMarketsCommand extends Command
         $exchange = new binance([
             'options' => [
                 'defaultType' => 'future',
-            ]
+            ],
         ]);
 
         $markets = $exchange->load_markets();
         foreach ($markets as $symbol => $market) {
-            if (! ($market['quote'] === MoneyHelper::BASE_CURRENCY && $market['type'] === 'swap')) {
+            if (!(MoneyHelper::BASE_CURRENCY === $market['quote'] && 'swap' === $market['type'])) {
                 continue;
             }
 

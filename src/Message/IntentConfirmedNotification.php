@@ -2,12 +2,12 @@
 
 namespace App\Message;
 
-readonly final class IntentConfirmedNotification
+final readonly class IntentConfirmedNotification
 {
-     public function __construct(
-         private string $confirmationId,
-     ) {
-     }
+    public function __construct(
+        private string $confirmationId,
+    ) {
+    }
 
     public function getConfirmationId(): string
     {

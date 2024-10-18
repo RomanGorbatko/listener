@@ -41,5 +41,6 @@ abstract class AbstractProcessor implements ProcessorInterface
     }
 
     abstract public function processNotification(string $message, \DateTimeImmutable $datetime): void;
+
     abstract public function getType(): ProcessorTypeEnum;
 }

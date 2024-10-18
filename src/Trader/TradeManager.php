@@ -9,7 +9,6 @@ use App\Entity\Ticker;
 use App\Enum\IntentStatusEnum;
 use App\Enum\PositionStatusEnum;
 use App\Event\TelegramLogEvent;
-use App\Helper\MoneyHelper;
 use App\Helper\TickerHelper;
 use App\Repository\PositionRepository;
 use ccxt\binanceusdm as BinanceClassic;
@@ -17,7 +16,9 @@ use ccxt\pro\binanceusdm as BinanceAsync;
 use Doctrine\ORM\EntityManagerInterface;
 use React\Promise\PromiseInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use function React\Async\{async, await};
+
+use function React\Async\async;
+use function React\Async\await;
 
 readonly class TradeManager
 {
@@ -28,7 +29,7 @@ readonly class TradeManager
         private EntityManagerInterface $entityManager,
         private EventDispatcherInterface $eventDispatcher,
         private PositionRepository $positionRepository,
-        private TradeMap $tradeMap
+        private TradeMap $tradeMap,
     ) {
     }
 
@@ -64,7 +65,7 @@ readonly class TradeManager
 
     public function listenOpenPositions(): PromiseInterface
     {
-//        dump((new BinanceClassic)->fetch_tickers());exit;
+        //        dump((new BinanceClassic)->fetch_tickers());exit;
 
         return async(function () {
             $binance = new BinanceAsync([]);
@@ -78,7 +79,7 @@ readonly class TradeManager
 
                 usleep(10);
 
-                if (! $symbols) {
+                if (!$symbols) {
                     continue;
                 }
 
@@ -86,7 +87,7 @@ readonly class TradeManager
                 foreach ($tickers as $ticker) {
                     /** @var TradingSimulator $tradingSimulator */
                     $tradingSimulator = $this->tradeMap->getTrade($ticker['symbol']);
-                    if (! $tradingSimulator instanceof TradingSimulator) {
+                    if (!$tradingSimulator instanceof TradingSimulator) {
                         continue;
                     }
 
@@ -96,7 +97,7 @@ readonly class TradeManager
                     $this->commitPosition($tradingSimulator->getPosition(), $ticker['symbol']);
                 }
             }
-        }) ();
+        })();
     }
 
     private function refreshSymbols(): array
@@ -110,7 +111,7 @@ readonly class TradeManager
             );
 
             if (null === $this->tradeMap->getTrade($symbol)) {
-                $tradingSimulator = new TradingSimulator($position, $this->eventDispatcher, $this->entityManager);
+                $tradingSimulator = new TradingSimulator($position, $this->eventDispatcher);
                 $tradingSimulator->openPosition();
 
                 $this->commitPosition($tradingSimulator->getPosition(), $symbol);
@@ -131,7 +132,7 @@ readonly class TradeManager
             $this->entityManager->persist($position);
             $this->entityManager->persist($position->getAccount());
 
-            if ($position->getStatus() === PositionStatusEnum::Closed) {
+            if (PositionStatusEnum::Closed === $position->getStatus()) {
                 $position->getIntent()->setStatus(IntentStatusEnum::Closed);
 
                 $this->entityManager->persist($position->getIntent());
@@ -142,9 +143,9 @@ readonly class TradeManager
             $this->entityManager->flush();
             $this->entityManager->commit();
         } catch (\Throwable $throwable) {
-            $logMessage = '⚡️<b>Exception occurs TradeManager</b>' . PHP_EOL;
-            $logMessage .= 'Class: <i>' . get_class($throwable) . '</i>' . PHP_EOL;
-            $logMessage .= 'Message: <i>' . $throwable->getMessage() . '</i>';
+            $logMessage = '⚡️<b>Exception occurs TradeManager</b>'.PHP_EOL;
+            $logMessage .= 'Class: <i>'.get_class($throwable).'</i>'.PHP_EOL;
+            $logMessage .= 'Message: <i>'.$throwable->getMessage().'</i>';
             $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
 
             $this->entityManager->rollback();

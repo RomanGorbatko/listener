@@ -6,8 +6,8 @@ use App\Event\TelegramLogEvent;
 use App\Helper\MoneyHelper;
 use App\Message\CryptoAttackNotification;
 use App\Processor\Handler\CexTrackProcessorHandler;
-use Money\Currency;
-use Money\Money;
+use Brick\Money\Currency;
+use Brick\Money\Money;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -24,44 +24,48 @@ class TestCommand extends Command
     public function __construct(
         private readonly MessageBusInterface $bus,
         private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly CexTrackProcessorHandler $cexTrackProcessorHandler
-    )
-    {
+        private readonly CexTrackProcessorHandler $cexTrackProcessorHandler,
+    ) {
         parent::__construct();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        throw new \RuntimeException('Example exception.');
-        $this->eventDispatcher->dispatch(new TelegramLogEvent('test text'));
+        $bitcoin = new Currency(currencyCode: 'BTC', numericCode: 0, name: 'Bitcoin', defaultFractionDigits: 8);
+        $money = Money::of('0.123', $bitcoin); // XBT 0.12300000
+
+        dump($money->getMinorAmount()->toInt());
+
+        //        throw new \RuntimeException('Example exception.');
+        //        $this->eventDispatcher->dispatch(new TelegramLogEvent('test text'));
         exit;
 
-//        $risk = 0.1;
-//        $commissionRate = 0.001;
-//        $leverage = 20;
-//        $initialBalance = 1000;
-//        $entryPrice = 1000;
-//        $stopPrice = 980;
-//        $takeProfitPrice =
-//        $currency = new Currency(MoneyHelper::BASE_CURRENCY);
-//
-//        $account = MoneyHelper::parser()->parse($initialBalance, $currency);
-//        $positionSize = $account->multiply((string) $risk);
-//        $effectiveAmount = $positionSize->multiply($leverage);
-//        $commissionPaid = $effectiveAmount->multiply((string) $commissionRate);
-//
-//        $account = $account->subtract(
-//            $positionSize->add($commissionPaid)
-//        );
-//
-//        dump([
-//            'positionSize' => MoneyHelper::formater()->format($positionSize),
-//            'effectiveAmount' => MoneyHelper::formater()->format($effectiveAmount),
-//            'commissionPaid' => MoneyHelper::formater()->format($commissionPaid),
-//            'accountAfterOpenedPosition' => MoneyHelper::formater()->format($account),
-//        ]);
+        //        $risk = 0.1;
+        //        $commissionRate = 0.001;
+        //        $leverage = 20;
+        //        $initialBalance = 1000;
+        //        $entryPrice = 1000;
+        //        $stopPrice = 980;
+        //        $takeProfitPrice =
+        //        $currency = new Currency(MoneyHelper::BASE_CURRENCY);
+        //
+        //        $account = MoneyHelper::parser()->parse($initialBalance, $currency);
+        //        $positionSize = $account->multiply((string) $risk);
+        //        $effectiveAmount = $positionSize->multiply($leverage);
+        //        $commissionPaid = $effectiveAmount->multiply((string) $commissionRate);
+        //
+        //        $account = $account->subtract(
+        //            $positionSize->add($commissionPaid)
+        //        );
+        //
+        //        dump([
+        //            'positionSize' => MoneyHelper::formater()->format($positionSize),
+        //            'effectiveAmount' => MoneyHelper::formater()->format($effectiveAmount),
+        //            'commissionPaid' => MoneyHelper::formater()->format($commissionPaid),
+        //            'accountAfterOpenedPosition' => MoneyHelper::formater()->format($account),
+        //        ]);
 
-//        exit;
+        //        exit;
 
         $this->bus->dispatch(new CryptoAttackNotification('
 🎰 #ALT покупают 🧨 на 2 BTC за 3 мин (16%) на Binance

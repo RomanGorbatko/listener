@@ -9,10 +9,8 @@ use App\Model\Timestampable\TimestampableTrait;
 use App\Model\Uuid\UuidInterface;
 use App\Model\Uuid\UuidTrait;
 use App\Repository\PositionRepository;
-use DateTimeImmutable;
+use Brick\Money\Money;
 use Doctrine\ORM\Mapping as ORM;
-use Money\Currency;
-use Money\Money;
 
 #[ORM\Entity(repositoryClass: PositionRepository::class)]
 class Position implements UuidInterface, TimestampableInterface
@@ -35,10 +33,10 @@ class Position implements UuidInterface, TimestampableInterface
     private float $entryPrice;
 
     #[ORM\Column(type: 'float', nullable: true)]
-    private float|null $stopLossPrice = null;
+    private ?float $stopLossPrice = null;
 
     #[ORM\Column(type: 'float', nullable: true)]
-    private float|null $takeProfitPrice = null;
+    private ?float $takeProfitPrice = null;
 
     #[ORM\Column(type: 'float', nullable: false)]
     private float $risk;
@@ -46,21 +44,21 @@ class Position implements UuidInterface, TimestampableInterface
     #[ORM\Column(type: 'integer', nullable: false)]
     private int $leverage;
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private string|null $amount = null;
+    #[ORM\Column(type: 'bigint', nullable: true)]
+    private ?int $amount = null;
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private string|null $pnl = null;
+    #[ORM\Column(type: 'bigint', nullable: true)]
+    private ?int $pnl = null;
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private string|null $commission = null;
+    #[ORM\Column(type: 'bigint', nullable: true)]
+    private ?int $commission = null;
 
     #[ORM\Column(type: 'boolean', nullable: false, options: ['default' => false])]
     private bool $closedPartially = false;
 
     public function __construct()
     {
-        $this->createdAt = new DateTimeImmutable();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getIntent(): Intent
@@ -145,44 +143,44 @@ class Position implements UuidInterface, TimestampableInterface
 
     public function getAmount(): ?Money
     {
-        if ($this->amount === null) {
+        if (null === $this->amount) {
             return null;
         }
 
-        return new Money($this->amount, new Currency(MoneyHelper::BASE_CURRENCY));
+        return MoneyHelper::ofMinorMoney($this->amount);
     }
 
     public function setAmount(Money $money): void
     {
-        $this->amount = $money->getAmount();
+        $this->amount = $money->getMinorAmount()->toInt();
     }
 
     public function getPnl(): ?Money
     {
-        if ($this->pnl === null) {
+        if (null === $this->pnl) {
             return null;
         }
 
-        return new Money($this->pnl, new Currency(MoneyHelper::BASE_CURRENCY));
+        return MoneyHelper::ofMinorMoney($this->pnl);
     }
 
-    public function setPnl(Money $pnl): void
+    public function setPnl(Money $money): void
     {
-        $this->pnl = $pnl->getAmount();
+        $this->pnl = $money->getMinorAmount()->toInt();
     }
 
     public function getCommission(): ?Money
     {
-        if ($this->commission === null) {
+        if (null === $this->commission) {
             return null;
         }
 
-        return new Money($this->commission, new Currency(MoneyHelper::BASE_CURRENCY));
+        return MoneyHelper::ofMinorMoney($this->commission);
     }
 
-    public function setCommission(Money $commission): void
+    public function setCommission(Money $money): void
     {
-        $this->commission = $commission->getAmount();
+        $this->commission = $money->getMinorAmount()->toInt();
     }
 
     public function isClosedPartially(): bool

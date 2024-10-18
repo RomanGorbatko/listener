@@ -2,14 +2,12 @@
 
 namespace App\Entity;
 
-
 use App\Model\Timestampable\TimestampableInterface;
 use App\Model\Timestampable\TimestampableTrait;
 use App\Model\Uuid\UuidInterface;
 use App\Model\Uuid\UuidTrait;
-use DateTimeImmutable;
-use Doctrine\ORM\Mapping as ORM;
 use App\Repository\TickerRepository;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Uid\Uuid;
@@ -34,7 +32,7 @@ class Ticker implements UuidInterface, TimestampableInterface
 
     public function __construct()
     {
-        $this->createdAt = new DateTimeImmutable();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getName(): string

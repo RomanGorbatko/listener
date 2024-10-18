@@ -7,18 +7,10 @@ use App\Enum\ExchangeEnum;
 use App\Helper\MoneyHelper;
 use App\Repository\AccountRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Money\Currencies\CryptoCurrencies;
-use Money\Currency;
-use Money\Formatter\DecimalMoneyFormatter;
-use Money\Money;
-use Money\MoneyFormatter;
-use Money\MoneyParser;
-use Money\Parser\DecimalMoneyParser;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -29,7 +21,7 @@ class AccountRegisterCommand extends Command
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly AccountRepository $accountRepository
+        private readonly AccountRepository $accountRepository,
     ) {
         parent::__construct();
     }
@@ -39,7 +31,6 @@ class AccountRegisterCommand extends Command
         $this
             ->addArgument('exchange', InputArgument::REQUIRED, 'Exchange value', null, ExchangeEnum::getValues())
             ->addArgument('amount', InputArgument::REQUIRED, 'Amount value')
-            ->addArgument('currency', InputArgument::REQUIRED, 'Currency value')
         ;
     }
 
@@ -48,10 +39,9 @@ class AccountRegisterCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $exchangeArgument = $input->getArgument('exchange');
         $amountArgument = $input->getArgument('amount');
-        $currencyArgument = $input->getArgument('currency');
 
         $exchange = ExchangeEnum::from($exchangeArgument);
-        $amount = MoneyHelper::parser()->parse($amountArgument, new Currency($currencyArgument));
+        $amount = MoneyHelper::createMoney($amountArgument);
 
         /** @var Account|null $accountEntity */
         $accountEntity = $this->accountRepository->findOneBy(['exchange' => $exchange]);
@@ -70,8 +60,8 @@ class AccountRegisterCommand extends Command
 
         $io->success('Register successfully');
         $table = $io->createTable();
-        $table->setHeaders(['Exchange', 'Amount', 'Currency']);
-        $table->addRow([$exchange->value, MoneyHelper::formater()->format($amount), $amount->getCurrency()]);
+        $table->setHeaders(['Exchange', 'Amount']);
+        $table->addRow([$exchange->value, MoneyHelper::pretty($amount)]);
         $table->setVertical();
 
         $table->render();

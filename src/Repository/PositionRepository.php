@@ -36,6 +36,6 @@ class PositionRepository extends ServiceEntityRepository
             ->setParameter('status', PositionStatusEnum::Open->value)
         ;
 
-        return !($qb->getQuery()->getOneOrNullResult() === null);
+        return !(null === $qb->getQuery()->getOneOrNullResult());
     }
 }

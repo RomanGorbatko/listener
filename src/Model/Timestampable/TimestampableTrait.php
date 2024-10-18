@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Model\Timestampable;
 
-
 use Doctrine\ORM\Mapping as ORM;
 
 trait TimestampableTrait

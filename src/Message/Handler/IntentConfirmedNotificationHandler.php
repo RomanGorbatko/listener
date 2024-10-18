@@ -20,7 +20,7 @@ final readonly class IntentConfirmedNotificationHandler
         private EntityManagerInterface $entityManager,
         private ConfirmationRepository $confirmationRepository,
         private AccountRepository $accountRepository,
-        private TradeManager $tradeManager
+        private TradeManager $tradeManager,
     ) {
     }
 

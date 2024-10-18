@@ -2,8 +2,6 @@
 
 namespace App\Trader;
 
-use App\Entity\Position;
-
 class TradeMap
 {
     private array $map = [];

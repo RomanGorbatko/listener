@@ -9,22 +9,22 @@ use App\Enum\ExchangeEnum;
 use App\Enum\IntentStatusEnum;
 use App\Enum\ProcessorTypeEnum;
 use App\Event\TelegramLogEvent;
+use App\Helper\MoneyHelper;
 use App\Processor\AbstractProcessor;
 use App\Processor\Exception\FailedExtractElementException;
 use App\Processor\Exception\UnsupportedTickerException;
 use App\Repository\AccountRepository;
-use Money\Currency;
-use Money\Money;
+use Brick\Money\Currency;
+use Brick\Money\Money;
 use Piscibus\PhpHashtag\Extractor;
-use Redis;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class CexTrackProcessorHandler extends AbstractProcessor
 {
     public function __construct(
-        private readonly Redis $redisDefault,
+        private readonly \Redis $redisDefault,
         private readonly AccountRepository $accountRepository,
-        private readonly EventDispatcherInterface $eventDispatcher
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -59,16 +59,16 @@ class CexTrackProcessorHandler extends AbstractProcessor
 
         if ($intentEntity instanceof Intent) {
             if ($intentEntity->getDirection() === $direction) {
-                $modifiedAmount = $intentEntity->getAmount()->add($amount);
+                $modifiedAmount = $intentEntity->getAmount()->plus($amount);
             } else {
-                $modifiedAmount = $intentEntity->getAmount()->subtract($amount);
+                $modifiedAmount = $intentEntity->getAmount()->minus($amount);
             }
             $intentEntity->setAmount($modifiedAmount);
             $intentEntity->setVolume($volume);
 
-            $message = '❕<b>Intent Updated</b>' . PHP_EOL;
-            $message .= 'Ticker: <i>#' . $intentEntity->getTicker()->getName() . '</i>' . PHP_EOL;
-            $message .= 'Direction: <i>' . $intentEntity->getDirection()->name . '</i>';
+            $message = '❕<b>Intent Updated</b>'.PHP_EOL;
+            $message .= 'Ticker: <i>#'.$intentEntity->getTicker()->getName().'</i>'.PHP_EOL;
+            $message .= 'Direction: <i>'.$intentEntity->getDirection()->name.'</i>';
             $this->eventDispatcher->dispatch(new TelegramLogEvent($message));
         } else {
             $intentEntity = new Intent();
@@ -81,9 +81,9 @@ class CexTrackProcessorHandler extends AbstractProcessor
             $intentEntity->setNotifiedAt($datetime);
             $intentEntity->setOriginalMessage($message);
 
-            $message = '❕<b>Intent created</b>' . PHP_EOL;
-            $message .= 'Ticker: <i>#' . $intentEntity->getTicker()->getName() . '</i>' . PHP_EOL;
-            $message .= 'Direction: <i>' . $intentEntity->getDirection()->name . '</i>';
+            $message = '❕<b>Intent created</b>'.PHP_EOL;
+            $message .= 'Ticker: <i>#'.$intentEntity->getTicker()->getName().'</i>'.PHP_EOL;
+            $message .= 'Direction: <i>'.$intentEntity->getDirection()->name.'</i>';
             $this->eventDispatcher->dispatch(new TelegramLogEvent($message));
         }
 
@@ -100,7 +100,7 @@ class CexTrackProcessorHandler extends AbstractProcessor
 
         /** @var Ticker|null $tickerEntity */
         $tickerEntity = $this->tickerRepository->findOneBy(['name' => $ticker]);
-        if (! $tickerEntity instanceof Ticker) {
+        if (!$tickerEntity instanceof Ticker) {
             $tickerEntity = new Ticker();
             $tickerEntity->setName($ticker);
             $tickerEntity->setExchanges([$exchange->value]);
@@ -179,7 +179,10 @@ class CexTrackProcessorHandler extends AbstractProcessor
         if (isset($matches[1])) {
             $lines = explode(' ', trim($matches[1]));
 
-            return new Money($this->parseAmount($lines[0]), new Currency($lines[1]));
+            return MoneyHelper::createMoney(
+                (int) $this->parseAmount($lines[0]),
+                new Currency($lines[1], 0, '', 8)
+            );
         }
 
         throw new FailedExtractElementException('amount');
@@ -200,7 +203,6 @@ class CexTrackProcessorHandler extends AbstractProcessor
 
     private function camelCase($string, bool $capitalizeFirstCharacter = false): string
     {
-
         $str = str_replace(' ', '', ucwords(str_replace('-', ' ', $string)));
 
         if (!$capitalizeFirstCharacter) {

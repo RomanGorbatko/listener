@@ -20,7 +20,7 @@ abstract class AbstractTopCEXProcessorHandler extends AbstractProcessor
 
     public function __construct(
         private readonly MessageBusInterface $bus,
-        private readonly EventDispatcherInterface $eventDispatcher
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -65,9 +65,9 @@ abstract class AbstractTopCEXProcessorHandler extends AbstractProcessor
             $this->entityManager->persist($confirmationEntity);
             $this->entityManager->flush();
 
-            $logMessage = '⚠️ <b>Confirmation received</b>' . PHP_EOL;
-            $logMessage .= 'Ticker: <i>#' . $confirmationEntity->getIntent()->getTicker()->getName() . '</i>' . PHP_EOL;
-            $logMessage .= 'Direction: <i>' . $confirmationEntity->getIntent()->getDirection()->name . '</i>';
+            $logMessage = '⚠️ <b>Confirmation received</b>'.PHP_EOL;
+            $logMessage .= 'Ticker: <i>#'.$confirmationEntity->getIntent()->getTicker()->getName().'</i>'.PHP_EOL;
+            $logMessage .= 'Direction: <i>'.$confirmationEntity->getIntent()->getDirection()->name.'</i>';
             $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
 
             $this->bus->dispatch(
@@ -82,7 +82,7 @@ abstract class AbstractTopCEXProcessorHandler extends AbstractProcessor
     private function extractTickers(string $message): array
     {
         $hashtags = Extractor::extract($message);
-        $hashtags = array_values(array_filter($hashtags, fn ($item) => $item !== '#' . $this->getType()->value));
+        $hashtags = array_values(array_filter($hashtags, fn ($item) => $item !== '#'.$this->getType()->value));
 
         return array_map(static fn ($item) => ltrim($item, '#'), $hashtags);
     }

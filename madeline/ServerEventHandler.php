@@ -1,12 +1,14 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use App\Message\CryptoAttackNotification;
 use danog\MadelineProto\EventHandler\Attributes\Handler;
 use danog\MadelineProto\EventHandler\Filter\FilterFromSender;
 use danog\MadelineProto\EventHandler\Message\PrivateMessage;
+use danog\MadelineProto\Logger;
 use danog\MadelineProto\Settings;
 use danog\MadelineProto\SimpleEventHandler;
-use danog\MadelineProto\Logger;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Exchange\AMQPExchangeType;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -30,7 +32,7 @@ $appHash = $_ENV['TELEGRAM_API_HASH'] ?? null;
 $chatId = $_ENV['TELEGRAM_CHAT_ID'] ?? null;
 $messengerDsn = $_ENV['MESSENGER_TRANSPORT_DSN'] ?? null;
 
-$session = __DIR__ . '/session/' . $appId;
+$session = __DIR__.'/session/'.$appId;
 if (!mkdir($session, recursive: true) && !is_dir($session)) {
     throw new RuntimeException(sprintf('Directory "%s" was not created', $session));
 }
@@ -59,7 +61,7 @@ class ServerEventHandler extends SimpleEventHandler
 {
     private const EXCHANGE_NAME = 'messages';
 
-    private AMQPStreamConnection|null $connection = null;
+    private ?AMQPStreamConnection $connection = null;
 
     #[Handler]
     public function handleMessage(PrivateMessage $message): void
@@ -113,7 +115,7 @@ class ServerEventHandler extends SimpleEventHandler
     {
         return [
             new BusNameStamp('messenger.bus.default'),
-            new SentStamp(AmqpTransport::class, 'async')
+            new SentStamp(AmqpTransport::class, 'async'),
         ];
     }
 
@@ -122,7 +124,7 @@ class ServerEventHandler extends SimpleEventHandler
      */
     private function getAMQPConnection(): AMQPStreamConnection
     {
-        if (! $this->connection instanceof AMQPStreamConnection) {
+        if (!$this->connection instanceof AMQPStreamConnection) {
             global $messengerDsn;
 
             $connectionParams = parse_url($messengerDsn);

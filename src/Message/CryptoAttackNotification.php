@@ -2,13 +2,11 @@
 
 namespace App\Message;
 
-use DateTimeImmutable;
-
-readonly final class CryptoAttackNotification
+final readonly class CryptoAttackNotification
 {
     public function __construct(
         private string $content,
-        private DateTimeImmutable $datetime,
+        private \DateTimeImmutable $datetime,
     ) {
     }
 
@@ -17,7 +15,7 @@ readonly final class CryptoAttackNotification
         return $this->content;
     }
 
-    public function getDatetime(): DateTimeImmutable
+    public function getDatetime(): \DateTimeImmutable
     {
         return $this->datetime;
     }

@@ -7,7 +7,6 @@ use App\Model\Timestampable\TimestampableTrait;
 use App\Model\Uuid\UuidInterface;
 use App\Model\Uuid\UuidTrait;
 use App\Repository\ConfirmationRepository;
-use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ConfirmationRepository::class)]
@@ -21,14 +20,14 @@ class Confirmation implements UuidInterface, TimestampableInterface
     private Intent $intent;
 
     #[ORM\Column(type: 'datetime_immutable', nullable: false)]
-    private DateTimeImmutable $notifiedAt;
+    private \DateTimeImmutable $notifiedAt;
 
     #[ORM\Column(type: 'text', nullable: false)]
     private string $originalMessage;
 
     public function __construct()
     {
-        $this->createdAt = new DateTimeImmutable();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getIntent(): Intent
@@ -41,12 +40,12 @@ class Confirmation implements UuidInterface, TimestampableInterface
         $this->intent = $intent;
     }
 
-    public function getNotifiedAt(): DateTimeImmutable
+    public function getNotifiedAt(): \DateTimeImmutable
     {
         return $this->notifiedAt;
     }
 
-    public function setNotifiedAt(DateTimeImmutable $notifiedAt): void
+    public function setNotifiedAt(\DateTimeImmutable $notifiedAt): void
     {
         $this->notifiedAt = $notifiedAt;
     }

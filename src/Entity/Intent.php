@@ -5,15 +5,14 @@ namespace App\Entity;
 use App\Enum\DirectionEnum;
 use App\Enum\ExchangeEnum;
 use App\Enum\IntentStatusEnum;
+use App\Helper\MoneyHelper;
 use App\Model\Timestampable\TimestampableInterface;
 use App\Model\Timestampable\TimestampableTrait;
 use App\Model\Uuid\UuidInterface;
 use App\Model\Uuid\UuidTrait;
 use App\Repository\IntentRepository;
-use DateTimeImmutable;
+use Brick\Money\Money;
 use Doctrine\ORM\Mapping as ORM;
-use Money\Currency;
-use Money\Money;
 
 #[ORM\Entity(repositoryClass: IntentRepository::class)]
 class Intent implements UuidInterface, TimestampableInterface
@@ -35,7 +34,7 @@ class Intent implements UuidInterface, TimestampableInterface
     private Ticker $ticker;
 
     #[ORM\Column(type: 'datetime_immutable', nullable: false)]
-    private DateTimeImmutable $notifiedAt;
+    private \DateTimeImmutable $notifiedAt;
 
     #[ORM\Column(type: 'text', nullable: false)]
     private string $originalMessage;
@@ -43,15 +42,12 @@ class Intent implements UuidInterface, TimestampableInterface
     #[ORM\Column(type: 'bigint', nullable: false)]
     private int $volume;
 
-    #[ORM\Column(type: 'string', nullable: false)]
-    private string $amount;
-
-    #[ORM\Column(type: 'string', nullable: false)]
-    private string $currency;
+    #[ORM\Column(type: 'bigint', nullable: false)]
+    private int $amount;
 
     public function __construct()
     {
-        $this->createdAt = new DateTimeImmutable();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getExchange(): ExchangeEnum
@@ -74,12 +70,12 @@ class Intent implements UuidInterface, TimestampableInterface
         $this->direction = $direction;
     }
 
-    public function getNotifiedAt(): DateTimeImmutable
+    public function getNotifiedAt(): \DateTimeImmutable
     {
         return $this->notifiedAt;
     }
 
-    public function setNotifiedAt(DateTimeImmutable $notifiedAt): void
+    public function setNotifiedAt(\DateTimeImmutable $notifiedAt): void
     {
         $this->notifiedAt = $notifiedAt;
     }
@@ -106,13 +102,12 @@ class Intent implements UuidInterface, TimestampableInterface
 
     public function getAmount(): Money
     {
-        return new Money($this->amount, new Currency($this->currency));
+        return MoneyHelper::ofMinorMoney($this->amount);
     }
 
     public function setAmount(Money $money): void
     {
-        $this->amount = $money->getAmount();
-        $this->currency = $money->getCurrency()->getCode();
+        $this->amount = $money->getMinorAmount()->toInt();
     }
 
     public function getTicker(): Ticker
