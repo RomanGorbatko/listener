@@ -17,4 +17,5 @@ enum ExchangeEnum: string
     case BitfinexFutures = 'bitfinexFutures';
     case Coinbase = 'coinbase';
     case Htx = 'htx';
+    case Bitmex = 'bitmex';
 }
