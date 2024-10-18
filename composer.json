@@ -9,6 +9,7 @@
         "ext-ctype": "*",
         "ext-iconv": "*",
         "ext-redis": "*",
+        "ext-intl": "*",
         "brick/money": "^0.10.0",
         "ccxt/ccxt": "4.4.12",
         "danog/madelineproto": "^8",

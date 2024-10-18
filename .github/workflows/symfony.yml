@@ -31,7 +31,7 @@ jobs:
     - name: PHPUnit tests
       uses: php-actions/phpunit@v4
       with:
-        php_extensions: "gmp xdebug bcmath"
+        php_extensions: "gmp xdebug bcmath intl"
     - name: Deploy to DigitalOcean
       uses: appleboy/ssh-action@master
       with:
