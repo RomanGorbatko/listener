@@ -44,7 +44,7 @@ class TradingSimulatorTest extends TestCase
 
         $this->assertEquals(PositionStatusEnum::Open, $position->getStatus());
         $this->assertEquals('$100', $this->formatMoney($position->getAmount()));
-        $this->assertEquals('$2', $this->formatMoney($position->getCommission()));
+        $this->assertEquals('$4', $this->formatMoney($position->getCommission()));
         $this->assertEquals(980, $position->getStopLossPrice());
         $this->assertEquals(1020, $position->getTakeProfitPrice());
         $this->assertEquals('$1,000', $this->formatMoney($position->getAccount()->getAmount()));
@@ -60,11 +60,11 @@ class TradingSimulatorTest extends TestCase
         $tradingSimulator->checkPosition($price);
 
         $this->assertEquals('-$42', $this->formatMoney($position->getPnl()));
-        $this->assertEquals('$4', $this->formatMoney($position->getCommission()));
+        $this->assertEquals('$8', $this->formatMoney($position->getCommission()));
         $this->assertEquals('$0', $this->formatMoney($position->getAmount()));
         $this->assertEquals(PositionStatusEnum::Closed, $position->getStatus());
 
-        $this->assertEquals('$954', $this->formatMoney($position->getAccount()->getAmount()));
+        $this->assertEquals('$950', $this->formatMoney($position->getAccount()->getAmount()));
     }
 
     public function testTrailingStopLoss(): void
@@ -98,7 +98,7 @@ class TradingSimulatorTest extends TestCase
         $this->assertSame($this->formatFloat($position->getEntryPrice()), $this->formatFloat($position->getStopLossPrice()));
         $this->assertEquals('1022.55', $this->formatFloat($position->getTakeProfitPrice()));
         $this->assertEquals('$30', $this->formatMoney($position->getAmount()));
-        $this->assertEquals('$3.40000000', $this->formatMoney($position->getCommission()));
+        $this->assertEquals('$6.80000000', $this->formatMoney($position->getCommission()));
         $this->assertEquals('$28', $this->formatMoney($position->getPnl()));
     }
 
@@ -171,8 +171,8 @@ class TradingSimulatorTest extends TestCase
         $this->assertEquals('1067.66', $this->formatFloat($position->getTakeProfitPrice()));
         $this->assertEquals('$0', $this->formatMoney($position->getAmount()));
         $this->assertEquals('$66', $this->formatMoney($position->getPnl()));
-        $this->assertEquals('$4', $this->formatMoney($position->getCommission()));
-        $this->assertEquals('$1,104', $this->formatMoney($position->getAccount()->getAmount()));
+        $this->assertEquals('$8', $this->formatMoney($position->getCommission()));
+        $this->assertEquals('$1,058', $this->formatMoney($position->getAccount()->getAmount()));
     }
 
     private function openPosition(): TradingSimulator
