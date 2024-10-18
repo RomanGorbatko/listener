@@ -6,6 +6,7 @@ use App\Event\TelegramLogEvent;
 use App\Helper\MoneyHelper;
 use App\Message\CryptoAttackNotification;
 use App\Processor\Handler\CexTrackProcessorHandler;
+use App\Service\CurrencyExchange;
 use App\Trader\TradeManager;
 use Brick\Money\Currency;
 use Brick\Money\Money;
@@ -27,12 +28,20 @@ class TestCommand extends Command
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly CexTrackProcessorHandler $cexTrackProcessorHandler,
         private readonly TradeManager $tradeManager,
+        private readonly CurrencyExchange $currencyExchange,
     ) {
         parent::__construct();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $usdt = MoneyHelper::createMoney(1000);
+        $btc = MoneyHelper::createMoney(1, new Currency('BTC', 0, 'Bitcoin', 8));
+
+        dump($usdt->plus($this->currencyExchange->convert($btc)));
+
+        exit;
+
         //        $bitcoin = new Currency(currencyCode: 'BTC', numericCode: 0, name: 'Bitcoin', defaultFractionDigits: 8);
         //        $money = Money::of('0.123', $bitcoin); // XBT 0.12300000
         //

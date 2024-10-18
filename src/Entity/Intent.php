@@ -13,8 +13,10 @@ use App\Model\Uuid\UuidTrait;
 use App\Repository\IntentRepository;
 use Brick\Money\Money;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 
 #[ORM\Entity(repositoryClass: IntentRepository::class)]
+#[HasLifecycleCallbacks]
 class Intent implements UuidInterface, TimestampableInterface
 {
     use UuidTrait;

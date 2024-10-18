@@ -1,0 +1,2 @@
+* * * * * /usr/bin/php /root/listener/bin/console app:update-expired-intents
+0 * * * * /usr/bin/php /root/listener/bin/console account:load-markets

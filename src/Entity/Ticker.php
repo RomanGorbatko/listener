@@ -8,11 +8,13 @@ use App\Model\Uuid\UuidInterface;
 use App\Model\Uuid\UuidTrait;
 use App\Repository\TickerRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: TickerRepository::class)]
+#[HasLifecycleCallbacks]
 class Ticker implements UuidInterface, TimestampableInterface
 {
     use UuidTrait;

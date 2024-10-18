@@ -11,10 +11,12 @@ use App\Model\Uuid\UuidTrait;
 use App\Repository\AccountRepository;
 use Brick\Money\Money;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: AccountRepository::class)]
 #[UniqueEntity('exchange')]
+#[HasLifecycleCallbacks]
 class Account implements UuidInterface, TimestampableInterface
 {
     use UuidTrait;

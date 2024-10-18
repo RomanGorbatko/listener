@@ -8,8 +8,10 @@ use App\Model\Uuid\UuidInterface;
 use App\Model\Uuid\UuidTrait;
 use App\Repository\ConfirmationRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 
 #[ORM\Entity(repositoryClass: ConfirmationRepository::class)]
+#[HasLifecycleCallbacks]
 class Confirmation implements UuidInterface, TimestampableInterface
 {
     use UuidTrait;

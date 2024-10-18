@@ -77,10 +77,12 @@ abstract class AbstractProcessor implements ProcessorInterface
             $this->entityManager->persist($confirmationEntity);
             $this->entityManager->flush();
 
-            $logMessage = '⚠️ <b>Confirmation received</b>'.PHP_EOL;
-            $logMessage .= 'Ticker: <i>#'.$confirmationEntity->getIntent()->getTicker()->getName().'</i>'.PHP_EOL;
-            $logMessage .= 'Direction: <i>'.$confirmationEntity->getIntent()->getDirection()->name.'</i>';
-            $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
+            if (IntentStatusEnum::OnPosition !== $intent->getStatus()) {
+                $logMessage = '⚠️ <b>Confirmation received</b>'.PHP_EOL;
+                $logMessage .= 'Ticker: <i>#'.$confirmationEntity->getIntent()->getTicker()->getName().'</i>'.PHP_EOL;
+                $logMessage .= 'Direction: <i>'.$confirmationEntity->getIntent()->getDirection()->name.'</i>';
+                $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
+            }
 
             $this->messageBus->dispatch(
                 new IntentConfirmedNotification($confirmationEntity->getId())

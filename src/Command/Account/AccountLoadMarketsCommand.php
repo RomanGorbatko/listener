@@ -2,11 +2,13 @@
 
 namespace App\Command\Account;
 
+use App\Entity\Currency;
 use App\Enum\ExchangeEnum;
-use App\Helper\MoneyHelper;
 use App\Helper\TickerHelper;
 use App\Repository\AccountRepository;
+use App\Repository\CurrencyRepository;
 use ccxt\binance;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,7 +22,9 @@ class AccountLoadMarketsCommand extends Command
 {
     public function __construct(
         private readonly \Redis $redisDefault,
+        private readonly EntityManagerInterface $entityManager,
         private readonly AccountRepository $accountRepository,
+        private readonly CurrencyRepository $currencyRepository,
     ) {
         parent::__construct();
     }
@@ -63,11 +67,36 @@ class AccountLoadMarketsCommand extends Command
 
         $markets = $exchange->load_markets();
         foreach ($markets as $symbol => $market) {
-            if (!(MoneyHelper::BASE_CURRENCY === $market['quote'] && 'swap' === $market['type'])) {
+            if (!(Currency::BASE_CURRENCY === $market['quote'] && 'swap' === $market['type'])) {
                 continue;
             }
 
             $this->redisDefault->sAdd($key, TickerHelper::symbolToTicker($symbol));
+
+            if (!in_array($market['base'], Currency::ALLOWED_CURRENCIES, true)) {
+                continue;
+            }
+
+            $rate = 1;
+            if (!in_array($market['base'], Currency::STABLES, true)) {
+                $ticker = $exchange->fetch_ticker($market['symbol']);
+
+                $rate = $ticker['last'];
+            }
+
+            /** @var Currency|null $currencyEntity */
+            $currencyEntity = $this->currencyRepository->findOneBy([
+                'currency' => $market['base'],
+            ]);
+            if (!$currencyEntity instanceof Currency) {
+                $currencyEntity = new Currency();
+            }
+            $currencyEntity->setCurrency($market['base']);
+            $currencyEntity->setRate((float) $rate);
+
+            $this->entityManager->persist($currencyEntity);
         }
+
+        $this->entityManager->flush();
     }
 }

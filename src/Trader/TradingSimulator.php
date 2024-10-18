@@ -27,7 +27,7 @@ class TradingSimulator
     //    private const float TAKE_PROFIT_FACTOR_SHORT = 0.99; // 1% для short
 
     private const float TRAILING_STEP = 0.0025; // 0.2%
-    private const float COMMISSION_RATE = 0.001;
+    private const float COMMISSION_RATE = 0.002;
 
     public function __construct(
         private readonly Position $position,
@@ -132,7 +132,7 @@ class TradingSimulator
 
         $this->position->getAccount()->setAmount(
             $this->position->getAccount()->getAmount()
-                ->plus($this->position->getPnl())
+                ->plus($profit)
         );
 
         if (null === $partialAmount) {
@@ -155,7 +155,9 @@ class TradingSimulator
 
         $logMessage .= 'Ticker: <i>#'.$this->position->getIntent()->getTicker()->getName().'</i>'.PHP_EOL;
         $logMessage .= 'Direction: <i>'.$this->position->getIntent()->getDirection()->name.'</i>'.PHP_EOL;
-        $logMessage .= 'Profit: <i>'.MoneyHelper::pretty($profit).'</i>'.PHP_EOL;
+        $logMessage .= 'Pnl: <i>'.MoneyHelper::pretty($this->position->getPnl()).'</i>'.PHP_EOL;
+        $logMessage .= 'Commission: <i>'.MoneyHelper::pretty($this->position->getCommission()).'</i>'.PHP_EOL;
+        $logMessage .= 'Profit: <i>'.MoneyHelper::pretty($this->position->getPnl()->minus($this->position->getCommission())).'</i>'.PHP_EOL;
         $logMessage .= 'Balance: <i>'.MoneyHelper::pretty($this->position->getAccount()->getAmount()).'</i>';
         $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
 

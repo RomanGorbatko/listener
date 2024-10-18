@@ -11,8 +11,10 @@ use App\Model\Uuid\UuidTrait;
 use App\Repository\PositionRepository;
 use Brick\Money\Money;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 
 #[ORM\Entity(repositoryClass: PositionRepository::class)]
+#[HasLifecycleCallbacks]
 class Position implements UuidInterface, TimestampableInterface
 {
     use UuidTrait;

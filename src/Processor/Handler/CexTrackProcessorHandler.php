@@ -14,6 +14,7 @@ use App\Processor\AbstractProcessor;
 use App\Processor\Exception\FailedExtractElementException;
 use App\Processor\Exception\UnsupportedTickerException;
 use App\Repository\AccountRepository;
+use App\Service\CurrencyExchange;
 use App\Trader\TradeManager;
 use Brick\Money\Currency;
 use Brick\Money\Money;
@@ -25,6 +26,7 @@ class CexTrackProcessorHandler extends AbstractProcessor
         private readonly \Redis $redisDefault,
         private readonly AccountRepository $accountRepository,
         private readonly TradeManager $tradeManager,
+        private readonly CurrencyExchange $currencyExchange,
     ) {
     }
 
@@ -61,19 +63,16 @@ class CexTrackProcessorHandler extends AbstractProcessor
             ],
         ]);
 
+        if (!$amount->getCurrency()->is(MoneyHelper::getTetherCurrency())) {
+            $amount = $this->currencyExchange->convert($amount);
+        }
+
         if ($intentEntity instanceof Intent) {
-            if ($intentEntity->getDirection() === $direction) {
-                $modifiedAmount = $intentEntity->getAmount()->plus($amount);
-            } else {
-                $modifiedAmount = $intentEntity->getAmount()->minus($amount);
-            }
+            $modifiedAmount = $intentEntity->getAmount()->plus($amount);
             $intentEntity->setAmount($modifiedAmount);
             $intentEntity->setVolume($volume);
 
-            $message = '❕<b>Intent Updated</b>'.PHP_EOL;
-            $message .= 'Ticker: <i>#'.$intentEntity->getTicker()->getName().'</i>'.PHP_EOL;
-            $message .= 'Direction: <i>'.$intentEntity->getDirection()->name.'</i>';
-            $this->eventDispatcher->dispatch(new TelegramLogEvent($message));
+            $messageLog = '❕<b>Intent Updated</b>'.PHP_EOL;
         } else {
             $intentEntity = new Intent();
             $intentEntity->setStatus(IntentStatusEnum::WaitingForConfirmation);
@@ -85,11 +84,12 @@ class CexTrackProcessorHandler extends AbstractProcessor
             $intentEntity->setNotifiedAt($datetime);
             $intentEntity->setOriginalMessage($message);
 
-            $message = '❕<b>Intent created</b>'.PHP_EOL;
-            $message .= 'Ticker: <i>#'.$intentEntity->getTicker()->getName().'</i>'.PHP_EOL;
-            $message .= 'Direction: <i>'.$intentEntity->getDirection()->name.'</i>';
-            $this->eventDispatcher->dispatch(new TelegramLogEvent($message));
+            $messageLog = '❕<b>Intent created</b>'.PHP_EOL;
         }
+        $messageLog .= 'Ticker: <i>#'.$intentEntity->getTicker()->getName().'</i>'.PHP_EOL;
+        $messageLog .= 'Direction: <i>'.$intentEntity->getDirection()->name.'</i>.PHP_EOL';
+        $messageLog .= 'Amount: <i>'.MoneyHelper::pretty($intentEntity->getAmount()).'</i>';
+        $this->eventDispatcher->dispatch(new TelegramLogEvent($messageLog));
 
         $this->entityManager->persist($intentEntity);
 
