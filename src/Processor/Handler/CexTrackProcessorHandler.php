@@ -87,7 +87,7 @@ class CexTrackProcessorHandler extends AbstractProcessor
             $messageLog = '❕<b>Intent created</b>'.PHP_EOL;
         }
         $messageLog .= 'Ticker: <i>#'.$intentEntity->getTicker()->getName().'</i>'.PHP_EOL;
-        $messageLog .= 'Direction: <i>'.$intentEntity->getDirection()->name.'</i>.PHP_EOL';
+        $messageLog .= 'Direction: <i>'.$intentEntity->getDirection()->name.'</i>'.PHP_EOL;
         $messageLog .= 'Amount: <i>'.MoneyHelper::pretty($intentEntity->getAmount()).'</i>';
         $this->eventDispatcher->dispatch(new TelegramLogEvent($messageLog));
 
