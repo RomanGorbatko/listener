@@ -13,4 +13,5 @@ enum ProcessorTypeEnum: string
     case TopCEXsbp = 'TopCEXsbp';
     case TopCEXsb = 'TopCEXsb';
     case TopCEXad = 'TopCEXad';
+    case DTVolumesNew = 'DTVolumesnew';
 }

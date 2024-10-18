@@ -52,7 +52,6 @@ readonly class TradeManager
             count($this->getPositionsForListen()) * self::DEFAULT_RISK_PERCENTAGE * 1000
         );
 
-
         return $minimumBalance->isLessThan($balance);
     }
 

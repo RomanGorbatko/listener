@@ -18,14 +18,12 @@ use App\Trader\TradeManager;
 use Brick\Money\Currency;
 use Brick\Money\Money;
 use Piscibus\PhpHashtag\Extractor;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class CexTrackProcessorHandler extends AbstractProcessor
 {
     public function __construct(
         private readonly \Redis $redisDefault,
         private readonly AccountRepository $accountRepository,
-        private readonly EventDispatcherInterface $eventDispatcher,
         private readonly TradeManager $tradeManager,
     ) {
     }
