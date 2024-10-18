@@ -14,16 +14,20 @@ use App\Event\TelegramLogEvent;
 use App\Helper\MoneyHelper;
 use App\Trader\TradingSimulator;
 use Brick\Money\Money;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase as TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class TradingSimulatorTest extends TestCase
 {
     private EventDispatcherInterface $eventDispatcher;
+    private EntityManagerInterface $entityManager;
 
     public function setUp(): void
     {
         $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $this->entityManager = $this->createMock(EntityManagerInterface::class);
+        $this->entityManager->method('refresh');
     }
 
     public function testOpenPosition(): void
@@ -43,7 +47,7 @@ class TradingSimulatorTest extends TestCase
         $this->assertEquals('$2', $this->formatMoney($position->getCommission()));
         $this->assertEquals(980, $position->getStopLossPrice());
         $this->assertEquals(1020, $position->getTakeProfitPrice());
-        $this->assertEquals('$898', $this->formatMoney($position->getAccount()->getAmount()));
+        $this->assertEquals('$1,000', $this->formatMoney($position->getAccount()->getAmount()));
     }
 
     public function testClosePositionByStopLoss(): void
@@ -113,7 +117,7 @@ class TradingSimulatorTest extends TestCase
         $this->assertEquals('1032.58', $this->formatFloat($position->getTakeProfitPrice()));
         $this->assertEquals('$30', $this->formatMoney($position->getAmount()));
         $this->assertEquals('$42', $this->formatMoney($position->getPnl()));
-        $this->assertEquals('$1,008.60000000', $this->formatMoney($position->getAccount()->getAmount()));
+        $this->assertEquals('$1,042', $this->formatMoney($position->getAccount()->getAmount()));
     }
 
     public function testCloseFullyPositionTakeProfit(): void
@@ -131,7 +135,7 @@ class TradingSimulatorTest extends TestCase
         $this->assertEquals('1032.58', $this->formatFloat($position->getTakeProfitPrice()));
         $this->assertEquals('$30', $this->formatMoney($position->getAmount()));
         $this->assertEquals('$42', $this->formatMoney($position->getPnl()));
-        $this->assertEquals('$1,008.60000000', $this->formatMoney($position->getAccount()->getAmount()));
+        $this->assertEquals('$1,042', $this->formatMoney($position->getAccount()->getAmount()));
 
         $price = 1050;
         $tradingSimulator->updateTrailing($price);
@@ -143,7 +147,7 @@ class TradingSimulatorTest extends TestCase
         $this->assertEquals('1052.63', $this->formatFloat($position->getTakeProfitPrice()));
         $this->assertEquals('$30', $this->formatMoney($position->getAmount()));
         $this->assertEquals('$42', $this->formatMoney($position->getPnl()));
-        $this->assertEquals('$1,008.60000000', $this->formatMoney($position->getAccount()->getAmount()));
+        $this->assertEquals('$1,042', $this->formatMoney($position->getAccount()->getAmount()));
 
         $price = 1065;
         $tradingSimulator->updateTrailing($price);
@@ -155,7 +159,7 @@ class TradingSimulatorTest extends TestCase
         $this->assertEquals('1067.66', $this->formatFloat($position->getTakeProfitPrice()));
         $this->assertEquals('$30', $this->formatMoney($position->getAmount()));
         $this->assertEquals('$42', $this->formatMoney($position->getPnl()));
-        $this->assertEquals('$1,008.60000000', $this->formatMoney($position->getAccount()->getAmount()));
+        $this->assertEquals('$1,042', $this->formatMoney($position->getAccount()->getAmount()));
 
         $price = 1040;
         $tradingSimulator->updateTrailing($price);
@@ -176,7 +180,7 @@ class TradingSimulatorTest extends TestCase
         $position = $this->createPosition();
         $this->assertEquals(PositionStatusEnum::Ready, $position->getStatus());
 
-        $tradingSimulator = new TradingSimulator($position, $this->eventDispatcher);
+        $tradingSimulator = new TradingSimulator($position, $this->eventDispatcher, $this->entityManager);
         $tradingSimulator->openPosition();
 
         $this->assertFalse($position->isClosedPartially());

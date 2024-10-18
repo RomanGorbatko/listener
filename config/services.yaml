@@ -12,6 +12,7 @@ services:
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
         bind:
             Redis $redisDefault: '@snc_redis.default'
+            int $minimumBalance : '%env(int:MINIMUM_BALANCE)%'
 #            string $projectDir: '%kernel.project_dir%'
 #            int $appId: '%env(TELEGRAM_API_ID)%'
 #            int $chatId: '%env(TELEGRAM_CHAT_ID)%'

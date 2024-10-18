@@ -6,6 +6,7 @@ use App\Event\TelegramLogEvent;
 use App\Helper\MoneyHelper;
 use App\Message\CryptoAttackNotification;
 use App\Processor\Handler\CexTrackProcessorHandler;
+use App\Trader\TradeManager;
 use Brick\Money\Currency;
 use Brick\Money\Money;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -25,6 +26,7 @@ class TestCommand extends Command
         private readonly MessageBusInterface $bus,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly CexTrackProcessorHandler $cexTrackProcessorHandler,
+        private readonly TradeManager $tradeManager
     ) {
         parent::__construct();
     }

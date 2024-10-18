@@ -33,6 +33,16 @@ class AccountLoadMarketsCommand extends Command
         foreach ($accountExchanges as $accountExchange) {
             match ($accountExchange) {
                 ExchangeEnum::BinanceFutures => $this->loadBinanceFuturesMarkets(),
+                ExchangeEnum::Simulator => throw new \Exception('To be implemented'),
+                ExchangeEnum::Binance => throw new \Exception('To be implemented'),
+                ExchangeEnum::Bybit => throw new \Exception('To be implemented'),
+                ExchangeEnum::BybitFutures => throw new \Exception('To be implemented'),
+                ExchangeEnum::Gate => throw new \Exception('To be implemented'),
+                ExchangeEnum::Kucoin => throw new \Exception('To be implemented'),
+                ExchangeEnum::Bitfinex => throw new \Exception('To be implemented'),
+                ExchangeEnum::BitfinexFutures => throw new \Exception('To be implemented'),
+                ExchangeEnum::Coinbase => throw new \Exception('To be implemented'),
+                ExchangeEnum::Htx => throw new \Exception('To be implemented'),
             };
 
             $io->success(sprintf('%s market successfully loaded.', $accountExchange->value));

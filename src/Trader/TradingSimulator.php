@@ -9,6 +9,7 @@ use App\Event\TelegramLogEvent;
 use App\Helper\MoneyHelper;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -31,6 +32,7 @@ class TradingSimulator
     public function __construct(
         private readonly Position $position,
         private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -72,11 +74,11 @@ class TradingSimulator
         ;
         $this->position->setTakeProfitPrice($takeProfitPrice);
 
-        $this->position->getAccount()->setAmount(
-            $this->position->getAccount()->getAmount()->minus(
-                $this->position->getAmount()?->plus($this->position->getCommission())
-            )
-        );
+        //        $this->position->getAccount()->setAmount(
+        //            $this->position->getAccount()->getAmount()->minus(
+        //                $this->position->getAmount()?->plus($this->position->getCommission())
+        //            )
+        //        );
 
         $logMessage = '🫡 <b>Position opened</b>'.PHP_EOL;
         $logMessage .= 'Ticker: <i>#'.$this->position->getIntent()->getTicker()->getName().'</i>'.PHP_EOL;
@@ -126,15 +128,20 @@ class TradingSimulator
             );
         }
 
+        $this->entityManager->refresh($this->position->getAccount());
+
         $this->position->getAccount()->setAmount(
             $this->position->getAccount()->getAmount()
-                ->plus($amountToClose)
                 ->plus($this->position->getPnl())
-                ->minus($commission)
         );
 
         if (null === $partialAmount) {
             $logMessage = '🫡 <b>Position closed</b>'.PHP_EOL;
+
+            $this->position->getAccount()->setAmount(
+                $this->position->getAccount()->getAmount()
+                    ->minus($this->position->getCommission())
+            );
 
             $this->position->setAmount(MoneyHelper::createZeroMoney());
             $this->position->setStatus(PositionStatusEnum::Closed);

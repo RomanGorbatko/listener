@@ -9,7 +9,9 @@ use App\Entity\Ticker;
 use App\Enum\IntentStatusEnum;
 use App\Enum\PositionStatusEnum;
 use App\Event\TelegramLogEvent;
+use App\Helper\MoneyHelper;
 use App\Helper\TickerHelper;
+use App\Repository\AccountRepository;
 use App\Repository\PositionRepository;
 use ccxt\binanceusdm as BinanceClassic;
 use ccxt\pro\binanceusdm as BinanceAsync;
@@ -26,11 +28,32 @@ readonly class TradeManager
     private const float DEFAULT_RISK_PERCENTAGE = 0.1;
 
     public function __construct(
+        private int $minimumBalance,
         private EntityManagerInterface $entityManager,
         private EventDispatcherInterface $eventDispatcher,
         private PositionRepository $positionRepository,
+        private AccountRepository $accountRepository,
         private TradeMap $tradeMap,
     ) {
+    }
+
+    public function isTradeAllowed(): bool
+    {
+        $minimumBalance = MoneyHelper::createMoney($this->minimumBalance);
+        $balance = MoneyHelper::createZeroMoney();
+
+        /** @var Account[] $accounts */
+        $accounts = $this->accountRepository->findAll();
+        foreach ($accounts as $account) {
+            $balance = $balance->plus($account->getAmount());
+        }
+
+        $minimumBalance = $minimumBalance->plus(
+            count($this->getPositionsForListen()) * self::DEFAULT_RISK_PERCENTAGE * 1000
+        );
+
+
+        return $minimumBalance->isLessThan($balance);
     }
 
     public function openPosition(Intent $intent, Account $account): Position
@@ -111,7 +134,7 @@ readonly class TradeManager
             );
 
             if (null === $this->tradeMap->getTrade($symbol)) {
-                $tradingSimulator = new TradingSimulator($position, $this->eventDispatcher);
+                $tradingSimulator = new TradingSimulator($position, $this->eventDispatcher, $this->entityManager);
                 $tradingSimulator->openPosition();
 
                 $this->commitPosition($tradingSimulator->getPosition(), $symbol);

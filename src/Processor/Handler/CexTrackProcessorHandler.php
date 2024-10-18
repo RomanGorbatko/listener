@@ -14,6 +14,7 @@ use App\Processor\AbstractProcessor;
 use App\Processor\Exception\FailedExtractElementException;
 use App\Processor\Exception\UnsupportedTickerException;
 use App\Repository\AccountRepository;
+use App\Trader\TradeManager;
 use Brick\Money\Currency;
 use Brick\Money\Money;
 use Piscibus\PhpHashtag\Extractor;
@@ -25,6 +26,7 @@ class CexTrackProcessorHandler extends AbstractProcessor
         private readonly \Redis $redisDefault,
         private readonly AccountRepository $accountRepository,
         private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly TradeManager $tradeManager,
     ) {
     }
 
@@ -33,6 +35,10 @@ class CexTrackProcessorHandler extends AbstractProcessor
      */
     public function processNotification(string $message, \DateTimeImmutable $datetime): void
     {
+        if (!$this->tradeManager->isTradeAllowed()) {
+            return;
+        }
+
         $lines = explode(PHP_EOL, trim($message));
         if (count($lines) <= 2) {
             throw new FailedExtractElementException('lines');
