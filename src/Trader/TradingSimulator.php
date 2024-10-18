@@ -7,6 +7,7 @@ use App\Enum\DirectionEnum;
 use App\Enum\PositionStatusEnum;
 use App\Event\TelegramLogEvent;
 use App\Helper\MoneyHelper;
+use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -47,12 +48,12 @@ class TradingSimulator
         $this->position->setStatus(PositionStatusEnum::Open);
         $this->position->setAmount(
             $this->position->getAccount()->getAmount()
-                ->multipliedBy($this->position->getRisk())
+                ->multipliedBy($this->position->getRisk(), RoundingMode::HALF_DOWN)
         );
 
         $commission = $this->position->getAmount()
-            ?->multipliedBy($this->position->getLeverage())
-            ->multipliedBy(self::COMMISSION_RATE);
+            ?->multipliedBy($this->position->getLeverage(), RoundingMode::HALF_DOWN)
+            ->multipliedBy(self::COMMISSION_RATE, RoundingMode::HALF_DOWN);
         $this->position->setCommission($commission);
 
         $stopLossPrice = $this->position->getEntryPrice() * (
@@ -103,13 +104,13 @@ class TradingSimulator
         }
 
         $profit = $amountToClose
-            ?->multipliedBy($this->position->getLeverage())
-            ->multipliedBy($multiplier)
-            ->dividedBy($this->position->getEntryPrice());
+            ?->multipliedBy($this->position->getLeverage(), RoundingMode::HALF_DOWN)
+            ->multipliedBy($multiplier, RoundingMode::HALF_DOWN)
+            ->dividedBy($this->position->getEntryPrice(), RoundingMode::HALF_DOWN);
 
         $commission = $amountToClose
-            ?->multipliedBy($this->position->getLeverage())
-            ->multipliedBy(self::COMMISSION_RATE);
+            ?->multipliedBy($this->position->getLeverage(), RoundingMode::HALF_DOWN)
+            ->multipliedBy(self::COMMISSION_RATE, RoundingMode::HALF_DOWN);
 
         $this->position->setCommission(
             $this->position->getCommission()?->plus(
@@ -201,7 +202,7 @@ class TradingSimulator
             if ($currentPrice >= $currentTakeProfit) {
                 if (false === $this->position->isClosedPartially()) {
                     // Закриваємо 70% позиції
-                    $partialAmount = $this->position->getAmount()?->multipliedBy((string) 0.70);
+                    $partialAmount = $this->position->getAmount()?->multipliedBy((string) 0.70, RoundingMode::HALF_DOWN);
                     $this->closePosition($currentPrice, $partialAmount);
 
                     //                    // Оновлюємо суму позиції на 30% від початкової
@@ -241,7 +242,7 @@ class TradingSimulator
 
             if ($currentPrice <= $currentTakeProfit) {
                 if (false === $this->position->isClosedPartially()) {
-                    $partialAmount = $this->position->getAmount()?->multipliedBy((string) 0.70);
+                    $partialAmount = $this->position->getAmount()?->multipliedBy((string) 0.70, RoundingMode::HALF_DOWN);
                     $this->closePosition($currentPrice, $partialAmount);
 
                     //                    $this->position->setAmount($this->position->getAmount()?->multiply((string) 0.30));
