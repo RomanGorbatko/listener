@@ -143,7 +143,7 @@ class TradingSimulatorTest extends TestCase
 
         $this->assertEquals(PositionStatusEnum::Open, $position->getStatus());
         $this->assertTrue($position->isClosedPartially());
-        $this->assertEquals('1040.00', $this->formatFloat($position->getStopLossPrice()));
+        $this->assertEquals('1020.00', $this->formatFloat($position->getStopLossPrice()));
         $this->assertEquals('1052.63', $this->formatFloat($position->getTakeProfitPrice()));
         $this->assertEquals('$30', $this->formatMoney($position->getAmount()));
         $this->assertEquals('$42', $this->formatMoney($position->getPnl()));

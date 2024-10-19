@@ -286,8 +286,13 @@ class TradingSimulator
         $this->position->setStopLossTrailed($this->position->getStopLossTrailed() + 1);
         $this->position->setStopLossPrice($newStopLoss);
 
-        if ($this->position->getTakeProfitTrailed() >= 1 && $this->position->getOriginalTakeProfitPrice()) {
+        if (
+            $this->position->getTakeProfitTrailed() >= 1
+            && null !== $this->position->getOriginalTakeProfitPrice()
+            && false === $this->position->isStopLossMovedToTakeProfit()
+        ) {
             $this->position->setStopLossPrice($this->position->getOriginalTakeProfitPrice());
+            $this->position->setStopLossMovedToTakeProfit(true);
         }
 
         $logMessage = '🫡 <b>Stop loss trailed</b>'.PHP_EOL;
