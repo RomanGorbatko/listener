@@ -28,7 +28,10 @@ final readonly class IntentConfirmedNotificationHandler
     {
         /** @var Confirmation|null $confirmationEntity */
         $confirmationEntity = $this->confirmationRepository->find($message->getConfirmationId());
-        if ($confirmationEntity instanceof Confirmation) {
+        if (
+            $confirmationEntity instanceof Confirmation
+            && IntentStatusEnum::WaitingForConfirmation === $confirmationEntity->getIntent()->getStatus()
+        ) {
             $confirmationEntity->getIntent()->setStatus(IntentStatusEnum::Confirmed);
 
             $this->entityManager->persist($confirmationEntity);

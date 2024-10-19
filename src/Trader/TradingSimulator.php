@@ -47,6 +47,8 @@ class TradingSimulator
             return;
         }
 
+        $this->entityManager->refresh($this->position->getAccount());
+
         $this->position->setStatus(PositionStatusEnum::Open);
         $this->position->setAmount(
             $this->position->getAccount()->getAmount()
