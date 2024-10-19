@@ -40,6 +40,9 @@ class Position implements UuidInterface, TimestampableInterface
     #[ORM\Column(type: 'float', nullable: true)]
     private ?float $takeProfitPrice = null;
 
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $originalTakeProfitPrice = null;
+
     #[ORM\Column(type: 'float', nullable: false)]
     private float $risk;
 
@@ -57,6 +60,12 @@ class Position implements UuidInterface, TimestampableInterface
 
     #[ORM\Column(type: 'boolean', nullable: false, options: ['default' => false])]
     private bool $closedPartially = false;
+
+    #[ORM\Column(type: 'integer', nullable: false, options: ['default' => 0])]
+    private int $takeProfitTrailed = 0;
+
+    #[ORM\Column(type: 'integer', nullable: false, options: ['default' => 0])]
+    private int $stopLossTrailed = 0;
 
     public function __construct()
     {
@@ -193,5 +202,35 @@ class Position implements UuidInterface, TimestampableInterface
     public function setClosedPartially(bool $closedPartially): void
     {
         $this->closedPartially = $closedPartially;
+    }
+
+    public function getTakeProfitTrailed(): int
+    {
+        return $this->takeProfitTrailed;
+    }
+
+    public function setTakeProfitTrailed(int $takeProfitTrailed): void
+    {
+        $this->takeProfitTrailed = $takeProfitTrailed;
+    }
+
+    public function getStopLossTrailed(): int
+    {
+        return $this->stopLossTrailed;
+    }
+
+    public function setStopLossTrailed(int $stopLossTrailed): void
+    {
+        $this->stopLossTrailed = $stopLossTrailed;
+    }
+
+    public function getOriginalTakeProfitPrice(): ?float
+    {
+        return $this->originalTakeProfitPrice;
+    }
+
+    public function setOriginalTakeProfitPrice(?float $originalTakeProfitPrice): void
+    {
+        $this->originalTakeProfitPrice = $originalTakeProfitPrice;
     }
 }

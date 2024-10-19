@@ -76,12 +76,6 @@ class TradingSimulator
         ;
         $this->position->setTakeProfitPrice($takeProfitPrice);
 
-        //        $this->position->getAccount()->setAmount(
-        //            $this->position->getAccount()->getAmount()->minus(
-        //                $this->position->getAmount()?->plus($this->position->getCommission())
-        //            )
-        //        );
-
         $logMessage = '🫡 <b>Position opened</b>'.PHP_EOL;
         $logMessage .= 'Ticker: <i>#'.$this->position->getIntent()->getTicker()->getName().'</i>'.PHP_EOL;
         $logMessage .= 'Direction: <i>'.$this->position->getIntent()->getDirection()->name.'</i>'.PHP_EOL;
@@ -162,23 +156,6 @@ class TradingSimulator
         $logMessage .= 'Profit: <i>'.MoneyHelper::pretty($this->position->getPnl()->minus($this->position->getCommission())).'</i>'.PHP_EOL;
         $logMessage .= 'Balance: <i>'.MoneyHelper::pretty($this->position->getAccount()->getAmount()).'</i>';
         $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
-
-        //        $this->balance += ($amountToClose + $profit - $commission);
-        //        $this->updateAccountBalance();
-        //        $this->totalCommissions += $commission;
-        //
-        //        if ($partialAmount !== null && $partialAmount < $this->position->getAmount()) {
-        //            $this->position->setAmount($this->position->getAmount() - $partialAmount);
-        //
-        //            $logMessage = '🫡 <b>Position closed partially</b>' . PHP_EOL;
-        //        } else {
-        //            $logMessage = '🫡 <b>Position closed</b>' . PHP_EOL;
-        //
-        //            $this->position->setAmount(0);
-        //            $this->position->setPnl($profit);
-        //            $this->position->setStatus(PositionStatusEnum::Closed);
-        //        }
-        //
     }
 
     public function updateTrailing(float $currentPrice): void
@@ -201,12 +178,7 @@ class TradingSimulator
 
             // Оновлюємо стоп-лосс, якщо він вищий за поточний
             if ($newStopLoss > $currentStopLoss) {
-                $this->position->setStopLossPrice($newStopLoss);
-
-                $logMessage = '🫡 <b>Stop loss trailed</b>'.PHP_EOL;
-                $logMessage .= 'Ticker: <i>#'.$this->position->getIntent()->getTicker()->getName().'</i>'.PHP_EOL;
-                $logMessage .= 'Stop loss: <i>'.$this->position->getStopLossPrice().'</i>';
-                $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
+                $this->processStopLossTrailing($newStopLoss);
             }
 
             // Якщо ціна досягла поточного take-profit
@@ -216,8 +188,6 @@ class TradingSimulator
                     $partialAmount = $this->position->getAmount()?->multipliedBy((string) 0.70, RoundingMode::HALF_DOWN);
                     $this->closePosition($currentPrice, $partialAmount);
 
-                    //                    // Оновлюємо суму позиції на 30% від початкової
-                    //                    $this->position->setAmount($this->position->getAmount()?->multiply((string) 0.30));
                     $this->position->setClosedPartially(true);
                 }
 
@@ -227,12 +197,7 @@ class TradingSimulator
                     $newTakeProfit = $currentPrice * (1 + self::TRAILING_STEP);
                 }
 
-                $this->position->setTakeProfitPrice($newTakeProfit);
-
-                $logMessage = '🫡 <b>Take profit trailed</b>'.PHP_EOL;
-                $logMessage .= 'Ticker: <i>#'.$this->position->getIntent()->getTicker()->getName().'</i>'.PHP_EOL;
-                $logMessage .= 'Take profit: <i>'.$this->position->getTakeProfitPrice().'</i>';
-                $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
+                $this->processTakeProfitTrailing($newTakeProfit);
             }
         }
 
@@ -243,12 +208,7 @@ class TradingSimulator
             $newStopLoss = $entryPrice * (1 - $newStopLossPercent);
 
             if ($newStopLoss < $currentStopLoss) {
-                $this->position->setStopLossPrice($newStopLoss);
-
-                $logMessage = '🫡 <b>Stop loss trailed</b>'.PHP_EOL;
-                $logMessage .= 'Ticker: <i>#'.$this->position->getIntent()->getTicker()->getName().'</i>'.PHP_EOL;
-                $logMessage .= 'Stop loss: <i>'.$this->position->getStopLossPrice().'</i>';
-                $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
+                $this->processStopLossTrailing($newStopLoss);
             }
 
             if ($currentPrice <= $currentTakeProfit) {
@@ -256,7 +216,6 @@ class TradingSimulator
                     $partialAmount = $this->position->getAmount()?->multipliedBy((string) 0.70, RoundingMode::HALF_DOWN);
                     $this->closePosition($currentPrice, $partialAmount);
 
-                    //                    $this->position->setAmount($this->position->getAmount()?->multiply((string) 0.30));
                     $this->position->setClosedPartially(true);
                 }
 
@@ -264,12 +223,8 @@ class TradingSimulator
                 if ($currentPrice >= $newTakeProfit) {
                     $newTakeProfit = $currentPrice * (1 - self::TRAILING_STEP);
                 }
-                $this->position->setTakeProfitPrice($newTakeProfit);
 
-                $logMessage = '🫡 <b>Take profit trailed</b>'.PHP_EOL;
-                $logMessage .= 'Ticker: <i>#'.$this->position->getIntent()->getTicker()->getName().'</i>'.PHP_EOL;
-                $logMessage .= 'Take profit: <i>'.$this->position->getTakeProfitPrice().'</i>';
-                $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
+                $this->processTakeProfitTrailing($newTakeProfit);
             }
         }
     }
@@ -309,5 +264,35 @@ class TradingSimulator
         }
 
         return;
+    }
+
+    public function processTakeProfitTrailing(float $newTakeProfit): void
+    {
+        if (null === $this->position->getOriginalTakeProfitPrice()) {
+            $this->position->setOriginalTakeProfitPrice($this->position->getTakeProfitPrice());
+        }
+
+        $this->position->setTakeProfitTrailed($this->position->getTakeProfitTrailed() + 1);
+        $this->position->setTakeProfitPrice($newTakeProfit);
+
+        $logMessage = '🫡 <b>Take profit trailed</b>'.PHP_EOL;
+        $logMessage .= 'Ticker: <i>#'.$this->position->getIntent()->getTicker()->getName().'</i>'.PHP_EOL;
+        $logMessage .= 'Take profit: <i>'.$this->position->getTakeProfitPrice().'</i>';
+        $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
+    }
+
+    public function processStopLossTrailing(float $newStopLoss): void
+    {
+        $this->position->setStopLossTrailed($this->position->getStopLossTrailed() + 1);
+        $this->position->setStopLossPrice($newStopLoss);
+
+        if ($this->position->getTakeProfitTrailed() >= 1 && $this->position->getOriginalTakeProfitPrice()) {
+            $this->position->setStopLossPrice($this->position->getOriginalTakeProfitPrice());
+        }
+
+        $logMessage = '🫡 <b>Stop loss trailed</b>'.PHP_EOL;
+        $logMessage .= 'Ticker: <i>#'.$this->position->getIntent()->getTicker()->getName().'</i>'.PHP_EOL;
+        $logMessage .= 'Stop loss: <i>'.$this->position->getStopLossPrice().'</i>';
+        $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
     }
 }
