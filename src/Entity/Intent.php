@@ -28,6 +28,9 @@ class Intent implements UuidInterface, TimestampableInterface
     #[ORM\Column(type: 'string', nullable: false, enumType: DirectionEnum::class)]
     private DirectionEnum $direction;
 
+    #[ORM\Column(type: 'string', nullable: false, enumType: DirectionEnum::class)]
+    private DirectionEnum $initialDirection;
+
     #[ORM\Column(type: 'string', nullable: false, enumType: IntentStatusEnum::class)]
     private IntentStatusEnum $status;
 
@@ -130,5 +133,15 @@ class Intent implements UuidInterface, TimestampableInterface
     public function setStatus(IntentStatusEnum $status): void
     {
         $this->status = $status;
+    }
+
+    public function getInitialDirection(): DirectionEnum
+    {
+        return $this->initialDirection;
+    }
+
+    public function setInitialDirection(DirectionEnum $initialDirection): void
+    {
+        $this->initialDirection = $initialDirection;
     }
 }

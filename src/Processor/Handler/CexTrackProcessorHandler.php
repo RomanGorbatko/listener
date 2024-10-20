@@ -68,7 +68,22 @@ class CexTrackProcessorHandler extends AbstractProcessor
         }
 
         if ($intentEntity instanceof Intent) {
-            $modifiedAmount = $intentEntity->getAmount()->plus($amount);
+            if ($intentEntity->getDirection() === $direction) {
+                $modifiedAmount = $intentEntity->getAmount()->plus($amount);
+            } else {
+                $modifiedAmount = $intentEntity->getAmount()->minus($amount);
+            }
+
+            if ($intentEntity->getAmount()->isLessThan(0)) {
+                $intentEntity->setDirection(
+                    DirectionEnum::Long === $intentEntity->getInitialDirection()
+                        ? DirectionEnum::Short
+                        : DirectionEnum::Long
+                );
+            } else {
+                $intentEntity->setDirection($intentEntity->getInitialDirection());
+            }
+
             $intentEntity->setAmount($modifiedAmount);
             $intentEntity->setVolume($volume);
 
@@ -79,6 +94,7 @@ class CexTrackProcessorHandler extends AbstractProcessor
             $intentEntity->setTicker($tickerEntity);
             $intentEntity->setAmount($amount);
             $intentEntity->setDirection($direction);
+            $intentEntity->setInitialDirection($direction);
             $intentEntity->setExchange($exchange);
             $intentEntity->setVolume($volume);
             $intentEntity->setNotifiedAt($datetime);
