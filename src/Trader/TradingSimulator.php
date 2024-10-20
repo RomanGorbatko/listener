@@ -300,6 +300,6 @@ class TradingSimulator
 
     protected function getAccountBalance(Account $account): Money
     {
-        return MoneyHelper::createMoney($this->accountRepository->getMinorBalance($account));
+        return MoneyHelper::ofMinorMoney($this->accountRepository->getMinorBalance($account));
     }
 }
