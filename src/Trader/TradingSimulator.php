@@ -29,7 +29,7 @@ class TradingSimulator
     //    private const float TAKE_PROFIT_FACTOR_SHORT = 0.99; // 1% для short
 
     private const float TRAILING_STEP = 0.0025; // 0.2%
-    private const float COMMISSION_RATE = 0.002;
+    private const float COMMISSION_RATE = 0.0005;
 
     public function __construct(
         private readonly Position $position,
