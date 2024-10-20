@@ -87,8 +87,6 @@ readonly class TradeManager
 
     public function listenOpenPositions(): PromiseInterface
     {
-        //        dump((new BinanceClassic)->fetch_tickers());exit;
-
         return async(function () {
             $binance = new BinanceAsync([]);
             $symbols = [];
@@ -133,7 +131,7 @@ readonly class TradeManager
             );
 
             if (null === $this->tradeMap->getTrade($symbol)) {
-                $tradingSimulator = new TradingSimulator($position, $this->eventDispatcher, $this->entityManager);
+                $tradingSimulator = new TradingSimulator($position, $this->eventDispatcher, $this->accountRepository);
                 $tradingSimulator->openPosition();
 
                 $this->commitPosition($tradingSimulator->getPosition(), $symbol);

@@ -2,14 +2,16 @@
 
 namespace App\Trader;
 
+use App\Entity\Account;
 use App\Entity\Position;
 use App\Enum\DirectionEnum;
 use App\Enum\PositionStatusEnum;
+use App\Enum\UpdateAccountBalanceTypeEnum;
 use App\Event\TelegramLogEvent;
 use App\Helper\MoneyHelper;
+use App\Repository\AccountRepository;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -32,7 +34,7 @@ class TradingSimulator
     public function __construct(
         private readonly Position $position,
         private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly AccountRepository $accountRepository,
     ) {
     }
 
@@ -47,11 +49,9 @@ class TradingSimulator
             return;
         }
 
-        $this->entityManager->refresh($this->position->getAccount());
-
         $this->position->setStatus(PositionStatusEnum::Open);
         $this->position->setAmount(
-            $this->position->getAccount()->getAmount()
+            $this->getAccountBalance($this->position->getAccount())
                 ->multipliedBy($this->position->getRisk(), RoundingMode::HALF_DOWN)
         );
 
@@ -82,7 +82,7 @@ class TradingSimulator
         $logMessage .= 'Entry: <i>'.$this->position->getEntryPrice().'</i>'.PHP_EOL;
         $logMessage .= 'Take Profit: <i>'.$this->position->getTakeProfitPrice().'</i>'.PHP_EOL;
         $logMessage .= 'Stop Loss: <i>'.$this->position->getStopLossPrice().'</i>'.PHP_EOL;
-        $logMessage .= 'Balance: <i>'.MoneyHelper::pretty($this->position->getAccount()->getAmount()).'</i>';
+        $logMessage .= 'Balance: <i>'.MoneyHelper::pretty($this->getAccountBalance($this->position->getAccount())).'</i>';
         $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
     }
 
@@ -124,20 +124,12 @@ class TradingSimulator
             );
         }
 
-        $this->entityManager->refresh($this->position->getAccount());
-
-        $this->position->getAccount()->setAmount(
-            $this->position->getAccount()->getAmount()
-                ->plus($profit)
-        );
+        $this->updatedAccountBalance($this->position->getAccount(), $profit, UpdateAccountBalanceTypeEnum::Increase);
 
         if (null === $partialAmount) {
             $logMessage = '🫡 <b>Position closed</b>'.PHP_EOL;
 
-            $this->position->getAccount()->setAmount(
-                $this->position->getAccount()->getAmount()
-                    ->minus($this->position->getCommission())
-            );
+            $this->updatedAccountBalance($this->position->getAccount(), $this->position->getCommission(), UpdateAccountBalanceTypeEnum::Decrease);
 
             $this->position->setAmount(MoneyHelper::createZeroMoney());
             $this->position->setStatus(PositionStatusEnum::Closed);
@@ -154,7 +146,7 @@ class TradingSimulator
         $logMessage .= 'Pnl: <i>'.MoneyHelper::pretty($this->position->getPnl()).'</i>'.PHP_EOL;
         $logMessage .= 'Commission: <i>'.MoneyHelper::pretty($this->position->getCommission()).'</i>'.PHP_EOL;
         $logMessage .= 'Profit: <i>'.MoneyHelper::pretty($this->position->getPnl()->minus($this->position->getCommission())).'</i>'.PHP_EOL;
-        $logMessage .= 'Balance: <i>'.MoneyHelper::pretty($this->position->getAccount()->getAmount()).'</i>';
+        $logMessage .= 'Balance: <i>'.MoneyHelper::pretty($this->getAccountBalance($this->position->getAccount())).'</i>';
         $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
     }
 
@@ -299,5 +291,15 @@ class TradingSimulator
         $logMessage .= 'Ticker: <i>#'.$this->position->getIntent()->getTicker()->getName().'</i>'.PHP_EOL;
         $logMessage .= 'Stop loss: <i>'.$this->position->getStopLossPrice().'</i>';
         $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
+    }
+
+    protected function updatedAccountBalance(Account $account, Money $money, UpdateAccountBalanceTypeEnum $updateType): void
+    {
+        $this->accountRepository->updateBalance($account, $money, $updateType);
+    }
+
+    protected function getAccountBalance(Account $account): Money
+    {
+        return MoneyHelper::createMoney($this->accountRepository->getMinorBalance($account));
     }
 }

@@ -2,10 +2,14 @@
 
 namespace App\Command;
 
+use App\Entity\Account;
+use App\Enum\ExchangeEnum;
+use App\Enum\UpdateAccountBalanceTypeEnum;
 use App\Event\TelegramLogEvent;
 use App\Helper\MoneyHelper;
 use App\Message\CryptoAttackNotification;
 use App\Processor\Handler\CexTrackProcessorHandler;
+use App\Repository\AccountRepository;
 use App\Service\CurrencyExchange;
 use App\Trader\TradeManager;
 use Brick\Money\Currency;
@@ -29,12 +33,26 @@ class TestCommand extends Command
         private readonly CexTrackProcessorHandler $cexTrackProcessorHandler,
         private readonly TradeManager $tradeManager,
         private readonly CurrencyExchange $currencyExchange,
+        private readonly AccountRepository $accountRepository,
     ) {
         parent::__construct();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        /** @var Account $account */
+        $account = $this->accountRepository->findOneBy(['exchange' => ExchangeEnum::BinanceFutures]);
+
+        $balance = $this->accountRepository->getMinorBalance($account);
+        dump(MoneyHelper::pretty(MoneyHelper::ofMinorMoney($balance)));
+
+        $this->accountRepository->updateBalance($account, MoneyHelper::createMoney(150), UpdateAccountBalanceTypeEnum::Decrease);
+
+        $balance = $this->accountRepository->getMinorBalance($account);
+        dump(MoneyHelper::pretty(MoneyHelper::ofMinorMoney($balance)));
+
+        exit;
+
         $usdt = MoneyHelper::createMoney(1000);
         $btc = MoneyHelper::createMoney(1, new Currency('BTC', 0, 'Bitcoin', 8));
 

@@ -12,6 +12,7 @@ use App\Enum\IntentStatusEnum;
 use App\Enum\PositionStatusEnum;
 use App\Event\TelegramLogEvent;
 use App\Helper\MoneyHelper;
+use App\Repository\AccountRepository;
 use App\Trader\TradingSimulator;
 use Brick\Money\Money;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,13 +22,12 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 class TradingSimulatorTest extends TestCase
 {
     private EventDispatcherInterface $eventDispatcher;
-    private EntityManagerInterface $entityManager;
+    private AccountRepository $accountRepository;
 
     public function setUp(): void
     {
         $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        $this->entityManager->method('refresh');
+        $this->accountRepository = $this->createMock(AccountRepository::class);
     }
 
     public function testOpenPosition(): void
@@ -125,6 +125,16 @@ class TradingSimulatorTest extends TestCase
         $tradingSimulator = $this->openPosition();
         $position = $tradingSimulator->getPosition();
 
+        $this->accountRepository
+            ->expects($this->once())
+            ->method('updateBalance')
+        ;
+        $this->accountRepository
+            ->expects($this->once())
+            ->method('getMinorBalance')
+            ->willReturn(1000)
+        ;
+
         $price = 1030;
         $tradingSimulator->updateTrailing($price);
         $tradingSimulator->checkPosition($price);
@@ -180,7 +190,7 @@ class TradingSimulatorTest extends TestCase
         $position = $this->createPosition();
         $this->assertEquals(PositionStatusEnum::Ready, $position->getStatus());
 
-        $tradingSimulator = new TradingSimulator($position, $this->eventDispatcher, $this->entityManager);
+        $tradingSimulator = new TradingSimulator($position, $this->eventDispatcher, $this->accountRepository);
         $tradingSimulator->openPosition();
 
         $this->assertFalse($position->isClosedPartially());
