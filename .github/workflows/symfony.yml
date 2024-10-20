@@ -46,3 +46,4 @@ jobs:
           php bin/console cache:pool:clear cache.global_clearer
           php bin/console doctrine:migrations:migrate
           supervisorctl restart all
+          crontab /root/listener/crontab

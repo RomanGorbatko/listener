@@ -160,10 +160,12 @@ class TradingSimulator
         $currentStopLoss = $this->position->getStopLossPrice();
         $currentTakeProfit = $this->position->getTakeProfitPrice();
         $stopLossMultiplier = $this->position->isClosedPartially() ? 0.01 : 0.02;
+        $direction = $this->position->getIntent()->getDirection();
 
-        if (DirectionEnum::Long === $this->position->getIntent()->getDirection()) {
+        if (DirectionEnum::Long === $direction) {
             // Розрахунок приросту ціни у відсотках від точки входу
             $priceIncreasePercent = ($currentPrice - $entryPrice) / $entryPrice;
+            $priceIncreasePercent = self::calculateRoi($currentPrice, $entryPrice, $direction);
             // Розрахунок нового стоп-лоссу на основі приросту ціни
             $newStopLossPercent = floor($priceIncreasePercent * 100) / 100 - $stopLossMultiplier; // Віднімаємо 2%, щоб підняти стоп кожні 1%
             $newStopLoss = $entryPrice * (1 + $newStopLossPercent);
@@ -193,8 +195,8 @@ class TradingSimulator
             }
         }
 
-        if (DirectionEnum::Short === $this->position->getIntent()->getDirection()) {
-            $priceDecreasePercent = ($entryPrice - $currentPrice) / $entryPrice;
+        if (DirectionEnum::Short === $direction) {
+            $priceDecreasePercent = self::calculateRoi($currentPrice, $entryPrice, $direction);
 
             $newStopLossPercent = floor($priceDecreasePercent * 100) / 100 - $stopLossMultiplier;
             $newStopLoss = $entryPrice * (1 - $newStopLossPercent);
@@ -291,6 +293,14 @@ class TradingSimulator
         $logMessage .= 'Ticker: <i>#'.$this->position->getIntent()->getTicker()->getName().'</i>'.PHP_EOL;
         $logMessage .= 'Stop loss: <i>'.$this->position->getStopLossPrice().'</i>';
         $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
+    }
+
+    public static function calculateRoi(float $currentPrice, float $entryPrice, DirectionEnum $directionEnum): float
+    {
+        return match ($directionEnum) {
+            DirectionEnum::Long => ($currentPrice - $entryPrice) / $entryPrice,
+            DirectionEnum::Short => ($entryPrice - $currentPrice) / $entryPrice,
+        };
     }
 
     protected function updatedAccountBalance(Account $account, Money $money, UpdateAccountBalanceTypeEnum $updateType): void
