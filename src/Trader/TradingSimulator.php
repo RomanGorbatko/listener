@@ -31,6 +31,8 @@ class TradingSimulator
     private const float TRAILING_STEP = 0.0025; // 0.2%
     private const float COMMISSION_RATE = 0.0005;
 
+    private const int CLOSE_STUCKED_AFTER_HOURS = 8;
+
     public function __construct(
         private readonly Position $position,
         private readonly EventDispatcherInterface $eventDispatcher,
@@ -86,7 +88,7 @@ class TradingSimulator
         $this->eventDispatcher->dispatch(new TelegramLogEvent($logMessage));
     }
 
-    private function closePosition(float $exitPrice, ?Money $partialAmount = null): void
+    private function closePosition(float $exitPrice, ?Money $partialAmount = null, bool $closeStucked = false): void
     {
         $amountToClose = $partialAmount ?: $this->position->getAmount();
 
@@ -127,7 +129,7 @@ class TradingSimulator
         $this->updatedAccountBalance($this->position->getAccount(), $profit, UpdateAccountBalanceTypeEnum::Increase);
 
         if (null === $partialAmount) {
-            $logMessage = '🫡 <b>Position closed</b>'.PHP_EOL;
+            $logMessage = '🫡 <b>Position closed'.($closeStucked ? ' [Stucked]' : '').'</b>'.PHP_EOL;
 
             $this->updatedAccountBalance($this->position->getAccount(), $this->position->getCommission(), UpdateAccountBalanceTypeEnum::Decrease);
 
@@ -164,7 +166,6 @@ class TradingSimulator
 
         if (DirectionEnum::Long === $direction) {
             // Розрахунок приросту ціни у відсотках від точки входу
-            $priceIncreasePercent = ($currentPrice - $entryPrice) / $entryPrice;
             $priceIncreasePercent = self::calculateRoi($currentPrice, $entryPrice, $direction);
             // Розрахунок нового стоп-лоссу на основі приросту ціни
             $newStopLossPercent = floor($priceIncreasePercent * 100) / 100 - $stopLossMultiplier; // Віднімаємо 2%, щоб підняти стоп кожні 1%
@@ -225,6 +226,8 @@ class TradingSimulator
 
     public function checkPosition(float $currentPrice): void
     {
+        $this->closeStuckedPosition($currentPrice);
+
         if (PositionStatusEnum::Closed === $this->position->getStatus()) {
             return;
         }
@@ -311,5 +314,25 @@ class TradingSimulator
     protected function getAccountBalance(Account $account): Money
     {
         return MoneyHelper::ofMinorMoney($this->accountRepository->getMinorBalance($account));
+    }
+
+    protected function closeStuckedPosition(float $currentPrice): void
+    {
+        $diff = (new \DateTime())->diff($this->position->getCreatedAt());
+        $hours = $diff->h + ($diff->days * 24);
+
+        if ($hours < self::CLOSE_STUCKED_AFTER_HOURS) {
+            return;
+        }
+
+        $direction = $this->position->getIntent()->getDirection();
+        $roi = self::calculateRoi($currentPrice, $this->position->getEntryPrice(), $direction);
+        $roi = round($roi * 100, 3);
+
+        if ($roi < 0) {
+            return;
+        }
+
+        $this->closePosition($currentPrice, null, true);
     }
 }
