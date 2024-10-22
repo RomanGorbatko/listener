@@ -25,7 +25,8 @@ use function React\Async\await;
 readonly class TradeManager
 {
     private const int DEFAULT_LEVERAGE = 20;
-    private const float DEFAULT_RISK_PERCENTAGE = 0.1;
+//    private const float DEFAULT_RISK_PERCENTAGE = 0.1; // 10%
+    private const float DEFAULT_RISK_PERCENTAGE = 0.01; // 1%
 
     public function __construct(
         private int $minimumBalance,
