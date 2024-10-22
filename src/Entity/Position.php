@@ -70,6 +70,9 @@ class Position implements UuidInterface, TimestampableInterface
     #[ORM\Column(type: 'boolean', nullable: false, options: ['default' => false])]
     private bool $stopLossMovedToTakeProfit = false;
 
+    #[ORM\Column(type: 'boolean', nullable: false, options: ['default' => false])]
+    private bool $stuck = false;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -245,5 +248,15 @@ class Position implements UuidInterface, TimestampableInterface
     public function setStopLossMovedToTakeProfit(bool $stopLossMovedToTakeProfit): void
     {
         $this->stopLossMovedToTakeProfit = $stopLossMovedToTakeProfit;
+    }
+
+    public function isStuck(): bool
+    {
+        return $this->stuck;
+    }
+
+    public function setStuck(bool $stuck): void
+    {
+        $this->stuck = $stuck;
     }
 }

@@ -133,6 +133,7 @@ class TradingSimulator
 
             $this->updatedAccountBalance($this->position->getAccount(), $this->position->getCommission(), UpdateAccountBalanceTypeEnum::Decrease);
 
+            $this->position->setStuck($closeStucked);
             $this->position->setAmount(MoneyHelper::createZeroMoney());
             $this->position->setStatus(PositionStatusEnum::Closed);
         } else {
