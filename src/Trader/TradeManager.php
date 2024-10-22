@@ -25,7 +25,7 @@ use function React\Async\await;
 readonly class TradeManager
 {
     private const int DEFAULT_LEVERAGE = 20;
-//    private const float DEFAULT_RISK_PERCENTAGE = 0.1; // 10%
+    //    private const float DEFAULT_RISK_PERCENTAGE = 0.1; // 10%
     private const float DEFAULT_RISK_PERCENTAGE = 0.01; // 1%
 
     public function __construct(
@@ -56,7 +56,7 @@ readonly class TradeManager
         return $minimumBalance->isLessThan($balance);
     }
 
-    public function openPosition(Intent $intent, Account $account): Position
+    public function openPosition(Intent $intent, Account $account)
     {
         $isPositionExists = $this->positionRepository->isOpenedPositionExists(
             $intent->getTicker(), $account->getExchange()
@@ -68,6 +68,15 @@ readonly class TradeManager
         }
 
         $openPrice = $this->openPositionOnExchange($intent->getTicker());
+
+        if (null === $openPrice) {
+            $intent->setStatus(IntentStatusEnum::Closed);
+            
+            $this->entityManager->persist($intent);
+            $this->entityManager->flush();
+
+            return;
+        }
 
         $position = new Position();
         $position->setIntent($intent);
@@ -82,8 +91,6 @@ readonly class TradeManager
 
         $this->entityManager->persist($position);
         $this->entityManager->flush();
-
-        return $position;
     }
 
     public function listenOpenPositions(): PromiseInterface
@@ -184,13 +191,21 @@ readonly class TradeManager
         ]]);
     }
 
-    private function openPositionOnExchange(Ticker $ticker): float
+    private function openPositionOnExchange(Ticker $ticker, int $retry = 0): ?float
     {
+        if ($retry > 5) {
+            return null;
+        }
+
         $binance = new BinanceClassic([]);
         $orderBook = $binance->fetch_order_book(
             TickerHelper::tickerToSymbol($ticker->getName())
         );
 
-        return (float) $orderBook['asks'][0][0];
+        if (isset($orderBook['asks'][0][0])) {
+            return (float) $orderBook['asks'][0][0];
+        }
+
+        return $this->openPositionOnExchange($ticker, ++$retry);
     }
 }
