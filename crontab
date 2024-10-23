@@ -1,3 +1,4 @@
 * * * * * /usr/bin/php /root/listener/bin/console app:update-expired-intents
 0 * * * * /usr/bin/php /root/listener/bin/console account:load-markets
 */30 * * * * /usr/bin/php /root/listener/bin/console account:status --positions --telegram
+0 */4 * * * /usr/bin/supervisorctl restart listener-trader
