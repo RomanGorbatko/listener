@@ -62,13 +62,13 @@ async function watchTrades (exchange, symbol) {
 
         try {
             const trades = await exchange.watchTrades (symbol)
-            if (watchIntentTickers[symbol] !== undefined) {
-                for (const trade of trades) {
-                    const ticker = trade.symbol.split('/')[0]
+            for (const trade of trades) {
+                const ticker = trade.symbol.split('/')[0]
 
+                if (watchIntentTickers[trade.symbol] !== undefined) {
                     const key = 'trades_'
                         + ticker + '_'
-                        + watchIntentTickers[symbol]['status'] + '_'
+                        + watchIntentTickers[trade.symbol]['status'] + '_'
                         + trade.side
 
                     if (await redisClient.exists(key)) {

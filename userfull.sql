@@ -59,8 +59,22 @@
 -- limit 1
 
 
-select extract(epoch from now() - p.created_at) / 60 / 60, t.name
-from position p
-left join intent i on i.id = p.intent_id
-left join ticker t on t.id = i.ticker_id
-where p.status = 'open' and (extract(epoch from now() - p.created_at) / 60 / 60) > 8
+-- select extract(epoch from now() - p.created_at) / 60 / 60, t.name
+-- from position p
+-- left join intent i on i.id = p.intent_id
+-- left join ticker t on t.id = i.ticker_id
+-- where p.status = 'open' and (extract(epoch from now() - p.created_at) / 60 / 60) > 8
+
+
+select t.name, i.direction, i.initial_direction, i.amount, p.pnl,
+       i.confirmation_trades_cost_buy,
+       i.confirmation_trades_cost_sell,
+       i.on_position_trades_cost_buy,
+       i.on_position_trades_cost_sell
+from intent i
+         left join position p on i.id = p.intent_id
+         left join ticker t on t.id = i.ticker_id
+where
+    i.status = 'closed'
+  and i.confirmation_trades_cost_buy is not null
+  and i.on_position_trades_cost_buy is not null
