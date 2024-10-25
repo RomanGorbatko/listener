@@ -50,6 +50,12 @@ class Intent implements UuidInterface, TimestampableInterface
     #[ORM\Column(type: 'bigint', nullable: false)]
     private int $amount;
 
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $confirmationTradesCostBuy = null;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $confirmationTradesCostSell = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -143,5 +149,25 @@ class Intent implements UuidInterface, TimestampableInterface
     public function setInitialDirection(DirectionEnum $initialDirection): void
     {
         $this->initialDirection = $initialDirection;
+    }
+
+    public function getConfirmationTradesCostBuy(): ?float
+    {
+        return $this->confirmationTradesCostBuy;
+    }
+
+    public function setConfirmationTradesCostBuy(?float $confirmationTradesCostBuy): void
+    {
+        $this->confirmationTradesCostBuy = $confirmationTradesCostBuy;
+    }
+
+    public function getConfirmationTradesCostSell(): ?float
+    {
+        return $this->confirmationTradesCostSell;
+    }
+
+    public function setConfirmationTradesCostSell(?float $confirmationTradesCostSell): void
+    {
+        $this->confirmationTradesCostSell = $confirmationTradesCostSell;
     }
 }

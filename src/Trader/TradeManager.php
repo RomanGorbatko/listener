@@ -71,7 +71,7 @@ readonly class TradeManager
 
         if (null === $openPrice) {
             $intent->setStatus(IntentStatusEnum::Closed);
-            
+
             $this->entityManager->persist($intent);
             $this->entityManager->flush();
 

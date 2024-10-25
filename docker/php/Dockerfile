@@ -71,3 +71,5 @@ FROM php-cli as app-cli
 
 COPY --from=osv-builder /usr/bin/osv-scanner /usr/bin/osv-scanner
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
+COPY --from=node:18.16.0-alpine3.17 /usr/local/bin /usr/local/bin
+COPY --from=node:18.16.0-alpine3.17 /usr/local/lib/node_modules /usr/local/lib/node_modules

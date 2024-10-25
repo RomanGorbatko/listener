@@ -1,0 +1,17 @@
+{
+  "name": "nodejs-image-demo",
+  "version": "1.0.0",
+  "description": "nodejs image demo",
+  "license": "MIT",
+  "main": "app.js",
+  "type": "module",
+  "dependencies": {
+    "async": "^3.2.6",
+    "ccxt": "^4.4.22",
+    "dotenv": "^16.4.5",
+    "pg": "^8.13.0",
+    "postgres": "^3.4.4",
+    "redis": "^4.7.0",
+    "set-interval-async": "^3.0.3"
+  }
+}

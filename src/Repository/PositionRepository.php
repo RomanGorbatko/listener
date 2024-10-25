@@ -38,4 +38,23 @@ class PositionRepository extends ServiceEntityRepository
 
         return !(null === $qb->getQuery()->getOneOrNullResult());
     }
+
+    /**
+     * @return Position[]
+     */
+    public function getOpenedPositions(): array
+    {
+        $qb = $this->createQueryBuilder('position');
+        $qb
+            ->leftJoin('position.intent', 'intent')
+            ->leftJoin('intent.ticker', 'ticker')
+            ->leftJoin('position.account', 'account')
+            ->andWhere(
+                $qb->expr()->eq('position.status', ':status')
+            )
+            ->setParameter('status', PositionStatusEnum::Open->value)
+        ;
+
+        return $qb->getQuery()->getResult();
+    }
 }

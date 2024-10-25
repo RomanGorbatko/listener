@@ -16,7 +16,9 @@ use App\Processor\Exception\UnsupportedTickerException;
 use App\Repository\AccountRepository;
 use App\Service\CurrencyExchange;
 use App\Trader\TradeManager;
+use Brick\Math\Exception\MathException;
 use Brick\Money\Currency;
+use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
 use Piscibus\PhpHashtag\Extractor;
 
@@ -31,7 +33,10 @@ class CexTrackProcessorHandler extends AbstractProcessor
     }
 
     /**
-     * @throws FailedExtractElementException|UnsupportedTickerException
+     * @throws FailedExtractElementException
+     * @throws UnsupportedTickerException
+     * @throws MathException
+     * @throws MoneyMismatchException
      */
     public function processNotification(string $message, \DateTimeImmutable $datetime): void
     {
