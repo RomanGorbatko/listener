@@ -33,7 +33,7 @@ readonly class RedisService
             if (IntentStatusEnum::WaitingForConfirmation === $status) {
                 $intent->setConfirmationTradesCostSell((float) $sellCosts);
             } elseif (IntentStatusEnum::OnPosition === $status) {
-                $intent->setOnPositionTradesCostSell((float) $buyCosts);
+                $intent->setOnPositionTradesCostSell((float) $sellCosts);
             }
         }
     }
