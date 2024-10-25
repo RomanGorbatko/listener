@@ -13,6 +13,7 @@ use App\Helper\MoneyHelper;
 use App\Helper\TickerHelper;
 use App\Repository\AccountRepository;
 use App\Repository\PositionRepository;
+use App\Service\RedisService;
 use ccxt\binanceusdm as BinanceClassic;
 use ccxt\pro\binanceusdm as BinanceAsync;
 use Doctrine\ORM\EntityManagerInterface;
@@ -35,6 +36,7 @@ readonly class TradeManager
         private PositionRepository $positionRepository,
         private AccountRepository $accountRepository,
         private TradeMap $tradeMap,
+        private RedisService $redisService,
     ) {
     }
 
@@ -161,11 +163,15 @@ readonly class TradeManager
             $this->entityManager->persist($position->getAccount());
 
             if (PositionStatusEnum::Closed === $position->getStatus()) {
+                $this->redisService->processTradeCostData($position->getIntent());
+
                 $position->getIntent()->setStatus(IntentStatusEnum::Closed);
 
                 $this->entityManager->persist($position->getIntent());
 
                 $this->tradeMap->removeTrade($ticker);
+
+                $this->redisService->clearTradeCostsData($position->getIntent(), IntentStatusEnum::OnPosition);
             }
 
             $this->entityManager->flush();

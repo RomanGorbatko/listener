@@ -56,6 +56,12 @@ class Intent implements UuidInterface, TimestampableInterface
     #[ORM\Column(type: 'float', nullable: true)]
     private ?float $confirmationTradesCostSell = null;
 
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $onPositionTradesCostBuy = null;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $onPositionTradesCostSell = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -169,5 +175,25 @@ class Intent implements UuidInterface, TimestampableInterface
     public function setConfirmationTradesCostSell(?float $confirmationTradesCostSell): void
     {
         $this->confirmationTradesCostSell = $confirmationTradesCostSell;
+    }
+
+    public function getOnPositionTradesCostBuy(): ?float
+    {
+        return $this->onPositionTradesCostBuy;
+    }
+
+    public function setOnPositionTradesCostBuy(?float $onPositionTradesCostBuy): void
+    {
+        $this->onPositionTradesCostBuy = $onPositionTradesCostBuy;
+    }
+
+    public function getOnPositionTradesCostSell(): ?float
+    {
+        return $this->onPositionTradesCostSell;
+    }
+
+    public function setOnPositionTradesCostSell(?float $onPositionTradesCostSell): void
+    {
+        $this->onPositionTradesCostSell = $onPositionTradesCostSell;
     }
 }

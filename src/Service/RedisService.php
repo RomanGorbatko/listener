@@ -22,11 +22,19 @@ readonly class RedisService
         $key = sprintf(self::TRADES_COST_KEY, $tickerName, $status->value);
 
         if ($buyCosts = $this->redisDefault->get($key.'buy')) {
-            $intent->setConfirmationTradesCostBuy((float) $buyCosts);
+            if (IntentStatusEnum::WaitingForConfirmation === $status) {
+                $intent->setConfirmationTradesCostBuy((float) $buyCosts);
+            } elseif (IntentStatusEnum::OnPosition === $status) {
+                $intent->setOnPositionTradesCostBuy((float) $buyCosts);
+            }
         }
 
         if ($sellCosts = $this->redisDefault->get($key.'sell')) {
-            $intent->setConfirmationTradesCostSell((float) $sellCosts);
+            if (IntentStatusEnum::WaitingForConfirmation === $status) {
+                $intent->setConfirmationTradesCostSell((float) $sellCosts);
+            } elseif (IntentStatusEnum::OnPosition === $status) {
+                $intent->setOnPositionTradesCostSell((float) $buyCosts);
+            }
         }
     }
 

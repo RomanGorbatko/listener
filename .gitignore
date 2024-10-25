@@ -30,3 +30,4 @@ MadelineProto.log
 ###< friendsofphp/php-cs-fixer ###
 
 /nodejs/node_modules
+/nodejs/package-lock.json
